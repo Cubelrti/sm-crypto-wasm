@@ -1,0 +1,29 @@
+{
+  "name": "sm-crypto-wasm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build:weapp": "wasm-pack build --target no-modules --release",
+    "dev:weapp": "vite",
+    "dev:alipay": "vite --config build/vite.alipay.js",
+    "build:alipay": "vite build --config build/vite.alipay.js"
+  },
+  "keywords": [],
+  "author": "haotianlong",
+  "license": "ISC",
+  "devDependencies": {
+    "@wasm-tool/rollup-plugin-rust": "^2.4.5",
+    "@wasm-tool/wasm-pack-plugin": "^1.7.0",
+    "chokidar": "^3.6.0",
+    "command-exists": "^1.2.9",
+    "magicast": "^0.3.4",
+    "os": "^0.1.2",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-wasm-pack-import": "^2.0.0",
+    "vite": "^5.3.2",
+    "vite-plugin-static-copy": "^1.0.5",
+    "which": "^4.0.0"
+  }
+}
