@@ -6,7 +6,7 @@
     "defaultTitle": "My App"
   },
   "workers": [
-    "workers/index.js"
+    "sm-crypto/worker.js"
   ],
   "behavior": {
     "requestReferrerStrategy": "page",

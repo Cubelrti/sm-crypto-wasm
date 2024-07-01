@@ -1,13 +1,55 @@
-import './shim-encoding';
-import init, { sm3 } from "../pkg/index";
-worker.onMessage(function (message) {
-  console.log('收到来自主线程的消息', message);
-  const res = sm3(6666)
-  console.log('res', res)
-  worker.postMessage({ res })
-});
-init("/index_bg.wasm").then(module => {
-  const res = sm3(6666)
-  console.log('res', res)
-  worker.postMessage(res)
-}).catch(console.error)
+let worker = null;
+
+function initSMCrypto() {
+  const scriptPath = 'sm-crypto/worker.js'; // worker 的入口文件
+  return new Promise((resolve, reject) => {
+    try {
+      worker = my.createWorker(scriptPath, {
+        useExperimentalWorker: true // iOS下需开启实验 worker
+      });
+      worker.onMessage(({ id, result }) => {
+        if (id === -1 && result === 'ready') {
+          console.log('Worker is ready');
+          resolve();
+        }
+      })
+      worker.onProcessKilled(console.log)
+    } catch (error) {
+      console.warn(error)
+      reject(error)
+    }
+  })
+
+}
+let callbackId = 0;
+
+// a custom function to call the worker, using callbackId to act as a Promise
+function invokeMethod(method, args) {
+  return new Promise((resolve, reject) => {
+    const id = callbackId++;
+    const startTime = Date.now();
+    worker.postMessage({ id, method, args });
+    worker.onMessage(({ id: responseId, result }) => {
+      if (responseId === id) {
+        const endTime = Date.now();
+        console.log(`[sm-crypto] perf: ${method} took ${endTime - startTime}ms`);
+        resolve(result);
+      }
+    });
+  });
+}
+
+function sm3() {
+  return invokeMethod('sm3', [6666]);
+}
+
+function sm2() {
+  return invokeMethod('sm2_encrypt', [6666]);
+
+}
+
+module.exports = {
+  initSMCrypto,
+  sm3,
+  sm2,
+}

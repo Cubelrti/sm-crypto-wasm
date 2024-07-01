@@ -1,25 +1,13 @@
+const smCrypto = require('../../sm-crypto/index')
 Page({
-  onLoad(query) {
+  async onLoad(query) {
     // 页面加载
     console.info(`Page onLoad with query: ${JSON.stringify(query)}`);
-    const scriptPath = 'workers/index.js'; // worker 的入口文件
-    try {
-      this.worker = my.createWorker(scriptPath, {
-        useExperimentalWorker: true // iOS下需开启实验 worker
-      });
-      console.log(this.worker)
-      this.worker.onMessage(msg => {
-        console.log('onMessage', msg)
-      })
-      this.worker.onProcessKilled(console.log)
-    } catch (error) {
-      console.warn(error)
-    }
-  },
-  sendMsg() {
-    this.worker.postMessage({
-      text: 'hello'
-    });
+    await smCrypto.initSMCrypto()
+    const sm2Result = await smCrypto.sm2()
+    console.log(sm2Result)
+    const sm3Result = await smCrypto.sm3()
+    console.log(sm3Result)
   },
   onReady() {
     // 页面加载完成
