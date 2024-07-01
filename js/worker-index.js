@@ -8,5 +8,5 @@ worker.onMessage(function (message) {
 });
 init("/sm-crypto/crypto.wasm").then(module => {
   console.log('module loaded successfully', module);
-  worker.postMessage({ id: -1, result: 'ready' });
+  worker.postMessage({ id: -1, event: 'ready' });
 }).catch(console.error)

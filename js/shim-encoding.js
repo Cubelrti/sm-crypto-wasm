@@ -398,6 +398,6 @@ encoders['UTF-8'] = function (a) {
 decoders['UTF-8'] = function (a) {
   return new UTF8Decoder(a)
 }
-
+var global = global || globalThis || {}
 global.TextEncoder = typeof TextEncoder === 'undefined' ? TextEncoder : global.TextEncoder
 global.TextDecoder = typeof TextDecoder === 'undefined' ? TextDecoder : global.TextDecoder

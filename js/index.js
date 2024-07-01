@@ -1,15 +1,15 @@
 let worker = null;
 
 function initSMCrypto() {
-  const scriptPath = 'sm-crypto/worker.js'; // worker 的入口文件
+  const scriptPath = 'sm-crypto/workers/sm-crypto.js'; // worker 的入口文件
   return new Promise((resolve, reject) => {
     try {
-      worker = my.createWorker(scriptPath, {
+      worker = UNIFIED_PLATFORM.createWorker(scriptPath, {
         useExperimentalWorker: true // iOS下需开启实验 worker
       });
-      worker.onMessage(({ id, result }) => {
-        if (id === -1 && result === 'ready') {
-          console.log('Worker is ready');
+      worker.onMessage(({ id, event }) => {
+        if (id === -1 && event === 'ready') {
+          console.log('[sm-crypto] worker ready');
           resolve();
         }
       })

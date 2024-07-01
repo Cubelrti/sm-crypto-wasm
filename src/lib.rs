@@ -21,8 +21,7 @@ pub fn sm3() -> String {
 #[wasm_bindgen]
 pub fn sm2_encrypt() -> String {
     console::log_1(&JsValue::from_str("invoked sm2_encrypt"));
-    let pk: String = String::from("046f3f44d73bd9515bbc283745f58a516b7fb19e83d6f223ae1ffd30783251fd40a6ea2159b340a97c8db9d93c7c613ec15756aa8591f88b6cf73fecb3b406bfcb");
-
+    let pk: String = String::from("04ac19d348738627d8e4b295ac792d0cdaf8489bdb3d932e569c485766d4dbf80a24ca30ead81e3b617f3c24852dfdf9cd13948c02b1e8692eb2e2200475a4cea0");
     let enc_ctx = crypto::sm2::Encrypt::new(&pk);
     let data: [u8; 16] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
     let data_enc = enc_ctx.encrypt_hex(&data);

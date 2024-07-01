@@ -3,11 +3,11 @@ import wasmPackPlugin from './plugin/vite-plugin-wasm-pack';
 import webassemblyRenamePlugin from './plugin/vite-plugin-webassembly';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path from 'node:path';
-
+const ROOT = 'templates/weapp/sm-crypto/'
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    UNIFIED_PLATFORM: 'my',
+    UNIFIED_PLATFORM: 'wx',
   },
   build: {
     rollupOptions: {
@@ -17,7 +17,7 @@ export default defineConfig({
       },
       output: {
         format: 'cjs',
-        dir: 'templates/alipay/sm-crypto/',
+        dir: ROOT,
         entryFileNames: '[name].js',
       }
     },
@@ -25,7 +25,7 @@ export default defineConfig({
   plugins: [
     viteStaticCopy({
       targets: [
-        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', 'templates/alipay/sm-crypto/'), rename: 'crypto.wasm' },
+        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', ROOT), rename: 'crypto.wasm' },
       ],
 
     }),
@@ -33,7 +33,7 @@ export default defineConfig({
       extraArgs: '--target web --release'
     }),
     webassemblyRenamePlugin({
-      name: 'MYWebAssembly',
+      name: 'WXWebAssembly',
     }),
   ]
 });
