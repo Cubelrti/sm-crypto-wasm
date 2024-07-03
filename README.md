@@ -21,8 +21,14 @@ Universal ShangMi Cryptography Library in WebAssembly
 
 For Cross-Platform Runtime, we also supported Taro and Uniapp:
 - Taro v3.x
-- Uniapp v?.?
+- Uni-app v4.x
 
+# Terminology
+
+For different platforms, due to API inconsistency, we have to use different terminology for the same concept:
+- Alipay: Worker
+- WeChat: WXWebAssembly or Worker
+- Toutiao / Douyin: TTWebAssembly
 
 ## Usage
 

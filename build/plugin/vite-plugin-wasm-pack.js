@@ -36,7 +36,11 @@ function wasmPackPlugin(options = {}) {
   const outName = options.outName || 'index';
   const watchDirectories = (options.watchDirectories || []).concat(path.resolve(crateDirectory, 'src'));
   const watchFiles = [path.resolve(crateDirectory, 'Cargo.toml')];
-
+  const env = options.env || {};
+  // set env vars
+  for (const key in env) {
+    process.env[key] = env[key];
+  }
   if (options.pluginLogLevel && options.pluginLogLevel !== 'info') {
     info = () => { };
   }

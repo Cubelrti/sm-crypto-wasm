@@ -1,6 +1,6 @@
 // index.js
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
-const smCrypto = require('../../sm-crypto/index.js')
+import smCrypto from '../../sm-crypto/index'
 Page({
   async onLoad() {
     await smCrypto.initSMCrypto()
@@ -8,6 +8,8 @@ Page({
     console.log(sm2Result)
     const sm3Result = await smCrypto.sm3()
     console.log(sm3Result)
+    const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
+    console.log(sm4Result)
   },
   data: {
     motto: 'Hello World',

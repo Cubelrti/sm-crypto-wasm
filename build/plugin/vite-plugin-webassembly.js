@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { parseModule, generateCode } from "magicast";
 
 export default function webassemblyRenamePlugin(options) {
@@ -9,6 +10,13 @@ export default function webassemblyRenamePlugin(options) {
         return;
       }
       const mod = parseModule(code);
+      if (options.name === 'TTWebAssembly') {
+        // add TextEncoder and TextDecoder shim
+        const shim = readFileSync('js/shim-encoding.js', 'utf-8');
+        const shimAst = parseModule(shim);
+        console.log(mod.$ast.body.length, shimAst.$ast.body.length)
+        mod.$ast.body = shimAst.$ast.body.concat(mod.$ast.body);
+      }
       // Traverse and modify the AST
       mod.$ast.body.forEach(node => {
         const traverseNode = (n, p, k) => {
@@ -24,6 +32,44 @@ export default function webassemblyRenamePlugin(options) {
             // console.log(`removing input assignment from ${n.start}-${n.end}`)
             p[k] = null;
           }
+
+          // shim Web Crypto API for Toutiao Mini Program or WeChat Mini Program in WebAssembly Mode
+          // replace the following line:
+          // const ret = getObject(arg0).crypto
+          if (n.type === 'VariableDeclarator' && n.id.type === 'Identifier' && n.id.name === 'ret' && n.init.type === 'MemberExpression' && n.init.object.type === 'CallExpression' && n.init.object.callee.type === 'Identifier' && n.init.object.callee.name === 'getObject' && n.init.object.arguments[0].type === 'Identifier' && n.init.object.arguments[0].name === 'arg0' && n.init.property.type === 'Identifier' && n.init.property.name === 'crypto') {
+            console.log(`shimming Web Crypto API for Toutiao Mini Program`)
+            const code = `const ret = {
+              getRandomValues: function(array) {
+                for (let i = 0, l = array.length; i < l; i++) {
+                    array[i] = Math.floor(Math.random() * 256);
+                }
+                return array;
+            }
+          }`;
+            n.init = parseModule(code).$ast.body[0].declarations[0].init;
+          }
+          // debug only
+          // add a console.log to all functions like
+          // imports.wbg.__wbindgen_memory = function() {
+          //   const ret = wasm.memory;
+          //   return addHeapObject(ret);
+        // };          
+          // into 
+          // imports.wbg.__wbindgen_memory = function() {
+          //   console.log('calling __wbindgen_memory');
+          //   const ret = wasm.memory;
+          //   return addHeapObject(ret);
+          // };
+
+          // if (n.type === 'ExpressionStatement' && n.expression.type === 'AssignmentExpression'
+          //   && n.expression.left.property?.name?.startsWith('__wb')
+          //   && n.expression.right.type === 'FunctionExpression'
+          //   && !n.$$hasConsoleLog
+          // ) {
+          //   n.$$hasConsoleLog = true;
+          //   const code = `console.log('calling ${n.expression.left.property.name}');`;
+          //   n.expression.right.body.body.unshift(parseModule(code).$ast.body[0]);
+          // }
 
           // Recursively traverse nested nodes
           for (const key in n) {

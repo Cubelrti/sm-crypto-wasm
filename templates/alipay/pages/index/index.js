@@ -1,4 +1,4 @@
-const smCrypto = require('../../sm-crypto/index')
+import smCrypto from '../../sm-crypto';
 Page({
   async onLoad(query) {
     // 页面加载
@@ -8,6 +8,8 @@ Page({
     console.log(sm2Result)
     const sm3Result = await smCrypto.sm3()
     console.log(sm3Result)
+    const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
+    console.log(sm4Result)
   },
   onReady() {
     // 页面加载完成

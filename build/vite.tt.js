@@ -5,32 +5,33 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path, { resolve } from 'node:path';
 import dts from 'vite-plugin-dts'
 
+const ROOT = 'templates/tt/sm-crypto/'
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    PLATFORM: 'my',
+    PLATFORM: 'tt',
+    __IS_WEAPP__: false,
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
     WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
-    __IS_WEAPP__: false,
   },
-
   build: {
     lib: {
-      entry: resolve(__dirname, '../js/index.ts'),
+      entry: resolve(__dirname, '../js/index.wasm.ts'),
       name: 'smCrypto',
       fileName: 'index',
       formats: ['cjs'],
     },
-    outDir: 'templates/alipay/sm-crypto/',
+    outDir: ROOT,
     rollupOptions: {
       input: {
-        index: 'js/index.ts',
-        'workers/sm-crypto': 'js/worker-index.js',
+        index: 'js/index.wasm.ts',
+        // 'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {
         format: 'cjs',
-        dir: 'templates/alipay/sm-crypto/',
+        dir: ROOT,
         entryFileNames: '[name].js',
+        chunkFileNames: 'chunks/[name]-[hash].js',
         inlineDynamicImports: false,
       }
     },
@@ -38,14 +39,15 @@ export default defineConfig({
   plugins: [
     viteStaticCopy({
       targets: [
-        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', 'templates/alipay/sm-crypto/'), rename: 'crypto.wasm' },
+        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', ROOT), rename: 'crypto.wasm' },
       ],
+
     }),
     wasmPackPlugin({
-      extraArgs: '--target web --release'
+      extraArgs: '--target web --release',
     }),
     webassemblyRenamePlugin({
-      name: 'MYWebAssembly',
+      name: 'TTWebAssembly',
     }),
     dts({
       copyDtsFiles: true,

@@ -28,6 +28,14 @@ pub fn sm2_encrypt() -> String {
     data_enc
 }
 
+#[wasm_bindgen]
+pub fn sm4_encrypt(input: String, key: &[u8], iv: &[u8]) -> String {
+    console::log_1(&JsValue::from_str("invoked sm4_encrypt"));
+    let data = crypto::sm4::CryptSM4CBC::new(key, iv).encrypt_cbc(input.as_bytes());
+    hex::encode(data)
+}
+
+
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
 pub fn main_js() -> Result<(), JsValue> {
@@ -36,9 +44,7 @@ pub fn main_js() -> Result<(), JsValue> {
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
 
-
     // Your code goes here!
     console::log_1(&JsValue::from_str("sm-crypto-wasm 0.0.1 initialized."));
-
     Ok(())
 }

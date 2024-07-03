@@ -5,33 +5,22 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path, { resolve } from 'node:path';
 import dts from 'vite-plugin-dts'
 
-const ROOT = 'templates/weapp/sm-crypto/'
+const ROOT = 'templates/web/'
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    PLATFORM: 'wx',
-    __IS_WEAPP__: true,
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
     WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
   },
   build: {
-    lib: {
-      entry: resolve(__dirname, '../js/index.ts'),
-      name: 'smCrypto',
-      fileName: 'index',
-      formats: ['cjs'],
-    },
     outDir: ROOT,
     rollupOptions: {
-      input: {
-        index: 'js/index.ts',
-        'workers/sm-crypto': 'js/worker-index.js',
-      },
+      input: "html/index.html",
       output: {
-        format: 'cjs',
+        // format: 'cjs',
         dir: ROOT,
-        entryFileNames: '[name].js',
-        inlineDynamicImports: false,
+        // entryFileNames: '[name].js',
+        // inlineDynamicImports: false,
       }
     },
   },
@@ -44,12 +33,6 @@ export default defineConfig({
     }),
     wasmPackPlugin({
       extraArgs: '--target web --release'
-    }),
-    webassemblyRenamePlugin({
-      name: 'WXWebAssembly',
-    }),
-    dts({
-      copyDtsFiles: true,
     }),
   ]
 });
