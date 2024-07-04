@@ -29,8 +29,8 @@ For Cross-Platform Runtime, we also supported Taro and Uniapp:
 
 For different platforms, due to API inconsistency, we have to use different terminology for the same concept:
 - Alipay: Worker
-- WeChat: WXWebAssembly or Worker
-- Toutiao / Douyin: TTWebAssembly
+- WeChat: Native
+- Toutiao / Douyin: Native
 
 Native WebAssembly is more suggested as it don't have worker count limits and may have better performance.
 
@@ -95,9 +95,8 @@ rustup install nightly
 
 ## Reference
 
-This project heavily inspired by the following projects:
+This project heavily inspired by the following projects, most of code are borrowed from them:
+
 - [sm-crypto](https://github.com/JuneAndGreen/sm-crypto)
 - [wx-wasm-bindgen](https://github.com/planet0104/wx-wasm-bindgen)
-
-We also use the following crates:
 - [smcrypto rust implementation](https://github.com/zhuobie/smcrypto)

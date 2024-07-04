@@ -5,7 +5,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path, { resolve } from 'node:path';
 import dts from 'vite-plugin-dts'
 
-let PREFER_WORKER = true;
+let PREFER_WORKER = false;
 
 const ROOT = 'templates/weapp/sm-crypto/'
 // https://vitejs.dev/config/
@@ -27,7 +27,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: PREFER_WORKER ? 'js/index.ts' : 'js/index.wasm.ts',
-        'workers/sm-crypto': 'js/worker-index.js',
+        // 'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {
         format: 'cjs',
