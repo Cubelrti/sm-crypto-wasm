@@ -7,5 +7,6 @@
     "navigationBarBackgroundColor": "#fff",
     "navigationBarTitleText": "Mini Program",
     "navigationBarTextStyle":"black"
-  }
+  },
+  "workers": "sm-crypto/workers/sm-crypto.js"
 }

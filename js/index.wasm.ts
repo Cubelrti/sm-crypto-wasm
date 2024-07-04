@@ -16,7 +16,7 @@ declare const __IS_WEAPP__: boolean
 async function initSMCrypto() {
   // 直接创建，不经过 worker
   try {
-    const instance = await mod.default("../../sm-crypto/crypto.wasm")
+    const instance = await mod.default("/sm-crypto/crypto.wasm")
     console.log("init sm-crypto-wasm direct success", instance)
     wasmInstance = instance
   } catch (error) {

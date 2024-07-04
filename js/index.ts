@@ -10,11 +10,12 @@ declare const PLATFORM: {
     options: { useExperimentalWorker: boolean }
   ) => any
 }
-declare const __IS_WEAPP__: boolean
+declare const __CONVERT_ARRAYBUFFER__: boolean
 declare const WORKER_SCRIPT_PATH: string
 
 function initSMCrypto() {
   const scriptPath = WORKER_SCRIPT_PATH // worker 的入口文件
+  console.log('init smcrypto worker')
   return new Promise<void>((resolve, reject) => {
     try {
       worker = PLATFORM.createWorker(scriptPath, {
@@ -55,7 +56,7 @@ function invokeMethod<M extends keyof Mod>(
     // if (wasmInstance) {
     //   resolve(mod[method].call(wasmInstance, ...args))
     // }
-    if (__IS_WEAPP__) {
+    if (__CONVERT_ARRAYBUFFER__) {
       // convert Uint8Array to ArrayBuffer
       // @ts-ignore
       args = args.map((arg) => {

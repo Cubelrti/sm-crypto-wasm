@@ -61,6 +61,5 @@ Page({
     console.log(sm3Result)
     const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
     console.log(sm4Result)
-
   }
 })

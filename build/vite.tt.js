@@ -5,18 +5,20 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path, { resolve } from 'node:path';
 import dts from 'vite-plugin-dts'
 
+let PREFER_WORKER = false;
+
 const ROOT = 'templates/tt/sm-crypto/'
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
     PLATFORM: 'tt',
-    __IS_WEAPP__: false,
+    __CONVERT_ARRAYBUFFER__: true,
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
-    WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
+    WASM_BINARY_PATH: `'/sm-crypto/crypto.wasm'`,
   },
   build: {
     lib: {
-      entry: resolve(__dirname, '../js/index.wasm.ts'),
+      entry: resolve(__dirname, `../js/index.${PREFER_WORKER ? '' : 'wasm.'}ts`),
       name: 'smCrypto',
       fileName: 'index',
       formats: ['cjs'],
@@ -24,8 +26,8 @@ export default defineConfig({
     outDir: ROOT,
     rollupOptions: {
       input: {
-        index: 'js/index.wasm.ts',
-        // 'workers/sm-crypto': 'js/worker-index.js',
+        index: PREFER_WORKER ? 'js/index.ts' : 'js/index.wasm.ts',
+        'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {
         format: 'cjs',

@@ -10,13 +10,11 @@ export default function webassemblyRenamePlugin(options) {
         return;
       }
       const mod = parseModule(code);
-      if (options.name === 'TTWebAssembly') {
-        // add TextEncoder and TextDecoder shim
-        const shim = readFileSync('js/shim-encoding.js', 'utf-8');
-        const shimAst = parseModule(shim);
-        console.log(mod.$ast.body.length, shimAst.$ast.body.length)
-        mod.$ast.body = shimAst.$ast.body.concat(mod.$ast.body);
-      }
+      // add TextEncoder and TextDecoder shim
+      // TT iOS and Alipay Android need shim inside Worker, global polyfill is not working
+      const shim = readFileSync('js/shim-encoding.js', 'utf-8');
+      const shimAst = parseModule(shim);
+      mod.$ast.body = shimAst.$ast.body.concat(mod.$ast.body);
       // Traverse and modify the AST
       mod.$ast.body.forEach(node => {
         const traverseNode = (n, p, k) => {
@@ -53,7 +51,7 @@ export default function webassemblyRenamePlugin(options) {
           // imports.wbg.__wbindgen_memory = function() {
           //   const ret = wasm.memory;
           //   return addHeapObject(ret);
-        // };          
+          // };          
           // into 
           // imports.wbg.__wbindgen_memory = function() {
           //   console.log('calling __wbindgen_memory');

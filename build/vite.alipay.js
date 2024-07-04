@@ -11,7 +11,7 @@ export default defineConfig({
     PLATFORM: 'my',
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
     WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
-    __IS_WEAPP__: false,
+    __CONVERT_ARRAYBUFFER__: true,
   },
 
   build: {
@@ -25,6 +25,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: 'js/index.ts',
+        'index-wasm': 'js/index.wasm.ts',
         'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {

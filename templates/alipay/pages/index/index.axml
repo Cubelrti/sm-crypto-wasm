@@ -1,5 +1,5 @@
 
 <view>
   this is a blank page
-  <button size="default" type="primary" onTap="sendMsg">Button</button>
+  <button size="default" type="primary" onTap="tap">Button</button>
 </view>
