@@ -140,3 +140,28 @@ impl<'a> CryptSM4CBC<'a> {
     }
 
 }
+
+pub struct CryptSM4ECB<'a> {
+    pub key: &'a [u8]
+}
+
+impl<'a> CryptSM4ECB<'a> {
+    pub fn new(key: &'a [u8]) -> Self {
+        CryptSM4ECB{key: key}
+    }
+
+    pub fn encrypt_ecb(&self, input_data: &[u8]) -> Vec<u8> {
+        let sk = set_key(self.key);
+        let mut i = 0;
+        let mut output_data: Vec<u8> = vec![];
+        let input_data = padding(input_data.to_vec());
+        let mut length = input_data.len();
+        while length > 0 {
+            output_data.append(&mut one_round(sk.to_owned(), input_data[i..(i + 16)].to_vec()));
+            i += 16;
+            length -= 16;
+        }
+        output_data
+    }
+
+}

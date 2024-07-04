@@ -1,5 +1,4 @@
 {
-  "files": ["js/index.ts"],
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",

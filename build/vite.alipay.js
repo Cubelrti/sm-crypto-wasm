@@ -16,7 +16,7 @@ export default defineConfig({
 
   build: {
     lib: {
-      entry: resolve(__dirname, '../js/index.ts'),
+      entry: resolve(__dirname, '../js/index.worker.ts'),
       name: 'smCrypto',
       fileName: 'index',
       formats: ['cjs'],
@@ -24,8 +24,7 @@ export default defineConfig({
     outDir: 'templates/alipay/sm-crypto/',
     rollupOptions: {
       input: {
-        index: 'js/index.ts',
-        'index-wasm': 'js/index.wasm.ts',
+        index: 'js/index.worker.ts',
         'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {

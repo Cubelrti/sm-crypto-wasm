@@ -40,7 +40,7 @@ Platform Support Matrix:
 | --------------- | ------------- | ---------- | ----------- |
 | iOS(Worker)     | ✅ (8.0.49)    | ✅ (3.0.30) | ✅ (10.6.6)  |
 | iOS(Native)     | ✅ (8.0.49)    | ✅ (3.0.30) | ❌           |
-| Android(Worker) | ❌ (Error)     | ✅ (30.5.0) | ✅ (10.6.10) |
+| Android(Worker) | ✅ (15.0.2560) | ✅ (30.5.0) | ✅ (10.6.10) |
 | Android(Native) | ✅ (15.0.2560) | ✅ (30.5.0) | ❌           |
 
 Note:
@@ -52,20 +52,19 @@ Note:
 - WeChat can only pass ArrayBuffer back and forth between JS and Worker.
 
 ## Usage
-<!-- 
 Install with Package Manager you have:
 
 ```bash
 npm install @sm-crypto-wasm/weapp # for specific environment
-``` -->
+```
 
 or, view `templates` for specific platform to start.
 
 Since the project is still under development, you may need to build the project by yourself.
 
-<!-- Alternatively, you can see the code snippet for several DevTools:
+Alternatively, you can see the code snippet for several DevTools:
 - [WeChat DevTools Snippet](https://example.com)
-- [Alipay DevTools Snippet](https://example.com) -->
+- [Alipay DevTools Snippet](https://example.com)
 
 ## API
 
@@ -88,8 +87,9 @@ cargo install wasm-pack
 For usability, we use some nightly features, so you may need to install nightly Rust:
 
 ```bash
-rustup install nightly
-# rustc --version
+rustup install nightly # for reference, we use nightly-2024-02-28
+rustup default nightly-2024-02-28-aarch64-apple-darwin
+rustc --version
 # rustc 1.78.0-nightly (ef324565d 2024-02-27)
 ```
 
@@ -100,3 +100,15 @@ This project heavily inspired by the following projects, most of code are borrow
 - [sm-crypto](https://github.com/JuneAndGreen/sm-crypto)
 - [wx-wasm-bindgen](https://github.com/planet0104/wx-wasm-bindgen)
 - [smcrypto rust implementation](https://github.com/zhuobie/smcrypto)
+
+## More Platform
+
+If you want to support more platforms, please open an issue or PR to discuss. 
+
+### OpenHarmony
+
+For OpenHarmony, since there is no WebAssembly support, you can use `smcrypto` crate for Rust, and compile it to cdylib for C/C++ usage.
+
+See also: https://doc.rust-lang.org/rustc/platform-support/openharmony.html
+
+You can refer to [this article](https://blog.csdn.net/BelanLu/article/details/137136031) for more information.

@@ -1,4 +1,3 @@
-// import './shim-encoding';
 import init, * as mod from "../pkg/index";
 console.log("worker-index: init wasm");
 

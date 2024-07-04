@@ -30,12 +30,24 @@ export default function webassemblyRenamePlugin(options) {
             // console.log(`removing input assignment from ${n.start}-${n.end}`)
             p[k] = null;
           }
+          // simplify the if statement in __wbg_load function
+          // to avoid loading wasm file by streaming
+          if (n.type === 'FunctionDeclaration' && n.id.type === 'Identifier' && n.id.name === '__wbg_load') {
+            const ifStatement = n.body.body.find(n => n.type === 'IfStatement');
+            if (ifStatement) {
+              // console.log(ifStatement)
+              console.log(`removing if statement from ${n.start}-${n.end}`)
+              n.body.body = ifStatement.alternate.body;
+              // console.log(n)
+            }
+
+          }
 
           // shim Web Crypto API for Toutiao Mini Program or WeChat Mini Program in WebAssembly Mode
           // replace the following line:
           // const ret = getObject(arg0).crypto
           if (n.type === 'VariableDeclarator' && n.id.type === 'Identifier' && n.id.name === 'ret' && n.init.type === 'MemberExpression' && n.init.object.type === 'CallExpression' && n.init.object.callee.type === 'Identifier' && n.init.object.callee.name === 'getObject' && n.init.object.arguments[0].type === 'Identifier' && n.init.object.arguments[0].name === 'arg0' && n.init.property.type === 'Identifier' && n.init.property.name === 'crypto') {
-            console.log(`shimming Web Crypto API for Toutiao Mini Program`)
+            console.log(`shimming Web Crypto API`)
             const code = `const ret = {
               getRandomValues: function(array) {
                 for (let i = 0, l = array.length; i < l; i++) {

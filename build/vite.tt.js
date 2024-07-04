@@ -18,7 +18,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, `../js/index.${PREFER_WORKER ? '' : 'wasm.'}ts`),
+      entry: resolve(__dirname, `../js/index.${PREFER_WORKER ? 'worker' : 'native'}.ts`),
       name: 'smCrypto',
       fileName: 'index',
       formats: ['cjs'],
@@ -26,7 +26,7 @@ export default defineConfig({
     outDir: ROOT,
     rollupOptions: {
       input: {
-        index: PREFER_WORKER ? 'js/index.ts' : 'js/index.wasm.ts',
+        index: `js/index.${PREFER_WORKER ? 'worker' : 'native'}.ts`,
         'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {
