@@ -25,14 +25,11 @@ For Cross-Platform Runtime, we also supported Taro and Uniapp:
 - Taro v3.x
 - Uni-app v4.x
 
-## Terminology
-
-For different platforms, due to API inconsistency, we have to use different terminology for the same concept:
-- Alipay: Worker
-- WeChat: Native
-- Toutiao / Douyin: Native
+## Background
 
 Native WebAssembly is more suggested as it don't have worker count limits and may have better performance.
+
+Alipay don't support it outside worker.
 
 Platform Support Matrix:
 
@@ -45,11 +42,10 @@ Platform Support Matrix:
 
 Note:
 - Alipay don't support Native WebAssembly yet.
-- WeChat Android Worker has some issues with WebAssembly loading: `Failed to load module Missing internal module _http_agent.`
+- WeChat need manual removal of `instantiateStreaming` for Worker.
 - Douyin need custom shim for Crypto API and TextEncoder/TextDecoder.
 - WeChat need custom shim for TextEncoder/TextDecoder for Native WebAssembly.
-- Douyin Android can only pass ArrayBuffer back and forth between JS and Worker.
-- WeChat can only pass ArrayBuffer back and forth between JS and Worker.
+- WeChat and Douyin Android can only pass ArrayBuffer back and forth between JS and Worker.
 
 ## Usage
 Install with Package Manager you have:
