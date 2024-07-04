@@ -36,12 +36,12 @@ Native WebAssembly is more suggested as it don't have worker count limits and ma
 
 Platform Support Matrix:
 
-| Platform        | WeChat        | Douyin     | Alipay      |
-| --------------- | ------------- | ---------- | ----------- |
-| iOS(Worker)     | ✅ (8.0.49)    | ✅ (3.0.30) | ✅ (10.6.6)  |
-| iOS(Native)     | ✅ (8.0.49)    | ✅ (3.0.30) | ❌           |
-| Android(Worker) | ✅ (15.0.2560) | ✅ (30.5.0) | ✅ (10.6.10) |
-| Android(Native) | ✅ (15.0.2560) | ✅ (30.5.0) | ❌           |
+| Platform        | WeChat     | Douyin     | Alipay      |
+| --------------- | ---------- | ---------- | ----------- |
+| iOS(Worker)     | ✅ (8.0.49) | ✅ (3.0.30) | ✅ (10.6.6)  |
+| iOS(Native)     | ✅ (8.0.49) | ✅ (3.0.30) | ❌           |
+| Android(Worker) | ✅ (8.0.49) | ✅ (30.5.0) | ✅ (10.6.10) |
+| Android(Native) | ✅ (8.0.49) | ✅ (30.5.0) | ❌           |
 
 Note:
 - Alipay don't support Native WebAssembly yet.
