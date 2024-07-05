@@ -17,19 +17,27 @@ Disclaimer: This project is still under development, and the API may change in t
 ## Supported Runtime
 
 - Web, Browser(H5)
-- WeChat MiniProgram
-- Toutiao MiniProgram
-- Alipay MiniProgram (Worker Only)
+- WeChat Mini Program
+- Douyin Mini Program / Toutiao Mini Program
+- Alipay Mini Program (Worker Only, Enterprise Entity Required)
 
-For Cross-Platform Runtime, we also supported Taro and Uniapp:
-- Taro v3.x
-- Uni-app v4.x
+## Secure Random Number Generation
+
+For secure random number generation, we use `rand` crate for Rust, and `rand_core` for WebAssembly.
+
+For WebAssembly in browser, we use `js-sys` to call `crypto.getRandomValues` for secure random number generation.
+
+For mini program runtime, only WeChat Mini Program provided `wx.getRandomValues`. For other platforms, you may need to provide your own secure random number generation, like get random number from server, or avoid using algorithms that require some random number:
+- SM2: Key Exchange, Signature, Encryption
+
+It is strongly recommended to use secure random number generation for security. We provide a shim for `getRandomValues` for unsupported platforms using `Math.random()`, but it is not secure enough for production use.
+
+Internally we use `ChaCha8` for random number generation, which is secure enough for most cases. But for security, the seed should be generated from a secure source and contain enough entropy.
+
 
 ## Background
 
 Native WebAssembly is more suggested as it don't have worker count limits and may have better performance.
-
-Alipay don't support it outside worker.
 
 Platform Support Matrix:
 
@@ -41,8 +49,8 @@ Platform Support Matrix:
 | Android(Native) | ✅ (8.0.49) | ✅ (30.5.0) | ❌           |
 
 Note:
-- Alipay don't support Native WebAssembly yet.
-- WeChat need manual removal of `instantiateStreaming` for Worker.
+- Alipay only support WebAssembly inside Worker.
+- WeChat need manual removal of `instantiateStreaming` for Worker on Android.
 - Douyin need custom shim for Crypto API and TextEncoder/TextDecoder.
 - WeChat need custom shim for TextEncoder/TextDecoder for Native WebAssembly.
 - WeChat and Douyin Android can only pass ArrayBuffer back and forth between JS and Worker.

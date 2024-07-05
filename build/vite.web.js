@@ -1,9 +1,7 @@
 import { defineConfig } from 'vite';
 import wasmPackPlugin from './plugin/vite-plugin-wasm-pack';
-import webassemblyRenamePlugin from './plugin/vite-plugin-webassembly';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path, { resolve } from 'node:path';
-import dts from 'vite-plugin-dts'
 
 const ROOT = 'templates/web/'
 // https://vitejs.dev/config/

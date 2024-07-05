@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { parseModule, generateCode } from "magicast";
 
-export default function webassemblyRenamePlugin(options) {
+export default function webAssemblyPlugin(options) {
   return {
     name: 'webassembly-transform-plugin',
     async transform(code, id) {
