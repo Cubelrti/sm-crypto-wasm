@@ -50,6 +50,7 @@ export default function webAssemblyPlugin(options) {
             console.log(`shimming Web Crypto API`)
             const code = `const ret = {
               getRandomValues: function(array) {
+                console.warn("[Warning] sm-crypto-wasm: It is dangerous to use non-cryptographically secure random number generator in production. Please populate RNG seed first from a secure source using 'smCrypto.initRNGPool()' API.")
                 for (let i = 0, l = array.length; i < l; i++) {
                     array[i] = Math.floor(Math.random() * 256);
                 }
