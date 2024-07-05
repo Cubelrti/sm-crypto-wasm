@@ -7,8 +7,6 @@ use num_bigint::BigUint;
 use num_traits::*;
 use num_integer::*;
 use rand::{seq::SliceRandom, RngCore};
-use wasm_bindgen::JsValue;
-use web_sys::console;
 use std::path::Path;
 use std::fs;
 use lazy_static::*;
