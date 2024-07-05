@@ -1,4 +1,4 @@
-import type * as mod from '../pkg/index'
+import type * as mod from './pkg/index'
 type Mod = typeof mod
 type ArgsType<T> = T extends (...args: infer U) => any ? U : never
 
@@ -36,21 +36,13 @@ function initSMCrypto() {
   })
 }
 
-// async function initSMCryptoDirect() {
-//   // 直接创建，不经过 worker
-//   const instance = await mod.default("/sm-crypto/crypto.wasm")
-//   console.log("init sm-crypto-wasm direct success")
-//   wasmInstance = instance
-// }
-
 let callbackId = 0
 
 // a custom function to call the worker, using callbackId to act as a Promise
-function invokeMethod<M extends keyof Mod>(
+function wrapMethod<M extends keyof Mod>(
   method: M,
-  ...args: ArgsType<Mod[M]>
-): Promise<ReturnType<Mod[M]>> {
-  return new Promise((resolve, reject) => {
+) {
+  return (...args: ArgsType<Mod[M]>) => new Promise<ReturnType<Mod[M]>>((resolve, reject) => {
     const id = callbackId++
     const startTime = Date.now()
     // if (wasmInstance) {
@@ -77,19 +69,11 @@ function invokeMethod<M extends keyof Mod>(
   })
 }
 
-function sm3() {
-  return invokeMethod('sm3')
-}
-
-function sm2() {
-  return invokeMethod('sm2_encrypt')
-}
-function sm4(input: string, key: Uint8Array, iv: Uint8Array) {
-  return invokeMethod('sm4_encrypt', input, key, iv)
-}
 export default {
   initSMCrypto,
-  sm2,
-  sm3,
-  sm4,
+  sm2: {
+    encrypt: wrapMethod('sm2_encrypt')
+  },
+  sm3: wrapMethod('sm3'),
+  sm4: wrapMethod('sm4_encrypt'),
 }

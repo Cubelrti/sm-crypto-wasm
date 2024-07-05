@@ -11,6 +11,5 @@
   "style": "v2",
   "componentFramework": "glass-easel",
   "sitemapLocation": "sitemap.json",
-  "lazyCodeLoading": "requiredComponents",
-  "workers": "sm-crypto/workers"
+  "lazyCodeLoading": "requiredComponents"
 }

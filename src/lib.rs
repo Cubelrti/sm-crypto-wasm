@@ -1,3 +1,5 @@
+use num_bigint::BigUint;
+use num_traits::Num;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -19,13 +21,48 @@ pub fn sm3() -> String {
 }
 
 #[wasm_bindgen]
-pub fn sm2_encrypt() -> String {
+pub fn sm2_encrypt(pk: &str, data: &[u8]) -> String {
     console::log_1(&JsValue::from_str("invoked sm2_encrypt"));
-    let pk: String = String::from("04ac19d348738627d8e4b295ac792d0cdaf8489bdb3d932e569c485766d4dbf80a24ca30ead81e3b617f3c24852dfdf9cd13948c02b1e8692eb2e2200475a4cea0");
     let enc_ctx = crypto::sm2::Encrypt::new(&pk);
-    let data: [u8; 16] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    console::log_1(&JsValue::from_str(hex::encode(data).as_str()));
     let data_enc = enc_ctx.encrypt_hex(&data);
     data_enc
+}
+
+
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)] // for JS interop and API consistency
+pub struct KeyPair {
+    pub publicKey: String,
+    pub privateKey: String,
+}
+
+#[wasm_bindgen]
+pub fn sm2_generate_keypair() -> JsValue {
+    let (sk, pk) = crypto::sm2::gen_keypair();
+    // prefix 04 for uncompressed public key
+    let pk = format!("04{}", pk);
+    let keypair = KeyPair {
+        publicKey: pk,
+        privateKey: sk,
+    };
+    serde_wasm_bindgen::to_value(&keypair).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn compress_public_key_hex(s: &str) -> Result<String, JsError> {
+    if s.len() != 130 {
+        return Err(JsError::new("invalid public key length"))
+    }
+    let public_key = &s[2..];
+    let x_hex: &str = &public_key[0..64];
+    let y: &str = &public_key[64..128];
+    let y = BigUint::from_str_radix(y, 16).unwrap();
+    let prefix = if y.bit(0) { "03" } else { "02" };
+    let compressed = format!("{}{}", prefix, x_hex);
+    Ok(compressed)
 }
 
 #[wasm_bindgen]

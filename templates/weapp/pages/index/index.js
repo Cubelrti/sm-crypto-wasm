@@ -4,12 +4,19 @@ import smCrypto from '../../sm-crypto/index'
 Page({
   async onLoad() {
     await smCrypto.initSMCrypto()
-    const sm2Result = await smCrypto.sm2()
-    console.log(sm2Result)
-    const sm3Result = await smCrypto.sm3()
+    // const kp = await smCrypto.sm2.generateKeyPairHex()
+    // console.log(kp)
+    // const compressed = smCrypto.sm2.compressPublicKeyHex(kp.publicKey);
+    // console.log(compressed)
+    const sm2Cbc = smCrypto.sm2.encrypt("044f99825924778930aa362c9137b6372da26772fd00b185d5ed2fb577c5d77d0daee0ffe557ecd8b161dfbf289b76fa521bcbf32d96350be873946251e70e8c8f", new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+    ]))
+    console.log(sm2Cbc)
+    const sm3Result = smCrypto.sm3()
     console.log(sm3Result)
     const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
     console.log(sm4Result)
+    global.smCrypto = smCrypto
   },
   data: {
     motto: 'Hello World',

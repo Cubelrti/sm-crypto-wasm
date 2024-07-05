@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev:weapp": "vite",
+    "dev:weapp": "vite --config build/vite.weapp.js",
     "dev:alipay": "vite --config build/vite.alipay.js",
     "build:alipay": "vite build --config build/vite.alipay.js",
     "build:weapp": "vite build --config build/vite.weapp.js",

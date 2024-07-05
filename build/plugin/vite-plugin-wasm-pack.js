@@ -32,7 +32,7 @@ function wasmPackPlugin(options = {}) {
   const forceMode = options.forceMode;
   const args = (options.args || '--verbose').trim().split(' ').filter(x => x);
   const extraArgs = (options.extraArgs || '').trim().split(' ').filter(x => x);
-  const outDir = options.outDir || 'pkg';
+  const outDir = options.outDir || 'js/pkg';
   const outName = options.outName || 'index';
   const watchDirectories = (options.watchDirectories || []).concat(path.resolve(crateDirectory, 'src'));
   const watchFiles = [path.resolve(crateDirectory, 'Cargo.toml')];

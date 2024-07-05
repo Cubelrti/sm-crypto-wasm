@@ -5,10 +5,11 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path, { resolve } from 'node:path';
 import dts from 'vite-plugin-dts'
 
-let PREFER_WORKER = true;
+let PREFER_WORKER = false;
 
 const ROOT = 'templates/weapp/sm-crypto/'
 // https://vitejs.dev/config/
+
 export default defineConfig({
   define: {
     PLATFORM: 'wx',
@@ -27,7 +28,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: `js/index.${PREFER_WORKER ? 'worker' : 'native'}.ts`,
-        'workers/sm-crypto': 'js/worker-index.js',
+        // if you use worker, you need to uncomment the following line:
+        // 'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {
         format: 'cjs',
@@ -40,7 +42,7 @@ export default defineConfig({
   plugins: [
     viteStaticCopy({
       targets: [
-        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', ROOT), rename: 'crypto.wasm' },
+        { src: 'js/pkg/index_bg.wasm', dest: path.join(__dirname, '..', ROOT), rename: 'crypto.wasm' },
       ],
 
     }),
@@ -52,6 +54,10 @@ export default defineConfig({
     }),
     dts({
       copyDtsFiles: true,
+      rollupTypes: true,
+      rollupOptions: {
+        showVerboseMessages: true,
+      },
     }),
   ]
 });
