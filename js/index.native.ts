@@ -1,4 +1,4 @@
-import mod, { compress_public_key_hex, sm2_encrypt, sm2_generate_keypair, sm3, sm4_encrypt } from './pkg'
+import mod, { compress_public_key_hex, init_rng_pool, sm2_encrypt, sm2_generate_keypair, sm3, sm4_encrypt } from './pkg'
 
 export type Mod = typeof mod
 type ArgsType<T> = T extends (...args: infer U) => any ? U : never
@@ -24,6 +24,7 @@ export default {
     generateKeyPairHex: sm2_generate_keypair,
     compressPublicKeyHex: compress_public_key_hex,
     encrypt: sm2_encrypt,
+    initRNGPool: init_rng_pool,
   },
   sm3,
   sm4: sm4_encrypt,

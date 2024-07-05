@@ -39,6 +39,7 @@ console_error_panic_hook = { version = "0.1.1", optional = true }
 gloo-utils = { version = "0.2.0", features = ["serde"] }
 rand = "0.8.5"
 rand_core = "0.6"
+rand_chacha = "0.3.1"
 base64 = "*"
 bytes = "1.1.0"
 num-traits = "0.2.14"

@@ -20,26 +20,33 @@ declare const _default: {
         generateKeyPairHex: typeof sm2_generate_keypair;
         compressPublicKeyHex: typeof compress_public_key_hex;
         encrypt: typeof sm2_encrypt;
+        initRNGPool: typeof init_rng_pool;
     };
     sm3: typeof sm3;
     sm4: typeof sm4_encrypt;
 };
 export default _default;
 
+/**
+ * @param {Uint8Array} seed
+ */
+declare function init_rng_pool(seed: Uint8Array): void;
+
 declare type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 declare interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly init_rng_pool: (a: number, b: number) => void;
     readonly sm3: (a: number) => void;
     readonly sm2_encrypt: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly sm2_generate_keypair: () => number;
     readonly compress_public_key_hex: (a: number, b: number, c: number) => void;
     readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly main_js: () => void;
-    readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_exn_store: (a: number) => void;
     readonly __wbindgen_start: () => void;
 }

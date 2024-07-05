@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use num_bigint::BigUint;
 use num_traits::*;
 use num_integer::*;
-use rand::seq::SliceRandom;
+use rand::{seq::SliceRandom, RngCore};
 use wasm_bindgen::JsValue;
 use web_sys::console;
 use std::path::Path;
@@ -67,12 +67,24 @@ fn submod(a: &BigUint, b: &BigUint, ecc_p: &BigUint) -> BigUint {
     }
 }
 
+fn get_best_rng() -> Box<dyn RngCore> {
+    let host_rng = crate::RNG.with(|rng| {
+        rng.borrow().as_ref().map(|r| r.clone())
+    });
+
+    if let Some(rng) = host_rng {
+        Box::new(rng)
+    } else {
+        Box::new(rand::thread_rng())
+    }
+}
+
+
 fn random_hex(x: usize) -> String {
     let c = vec!["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
     let mut s: String = "".to_string();
     for _ in 0..x {
-        console::log_1(&JsValue::from_str("random_hex"));
-        s += *c.choose(&mut rand::thread_rng()).unwrap();
+        s += *c.choose(&mut get_best_rng()).unwrap();
     }
     s
 }
@@ -389,15 +401,12 @@ fn verify_from_file(id: &[u8], data: &[u8], sign_file: &str, public_key: &str) -
 }
 
 fn encrypt(data: &[u8], public_key: &str) -> Vec<u8> {
-    console::log_1(&JsValue::from_str("k"));
     let k = random_hex(*PARA_LEN);
     let c1xyz = kg(BigUint::from_str_radix(k.as_str(), 16).unwrap(), &ECC_G_POINT);
-    console::log_1(&JsValue::from_str("c1xyz hex affine"));
     let c1x = appendzero(&BigUint::to_bytes_be(&c1xyz.x), *PARA_LEN / 2);
     let c1y = appendzero(&BigUint::to_bytes_be(&c1xyz.y), *PARA_LEN / 2);
     let c1 = concvec(&c1x, &c1y);
     let xy = kg(BigUint::from_str_radix(k.as_str(), 16).unwrap(), &from_hex_affine(public_key));
-    console::log_1(&JsValue::from_str("xy point hex affine"));
 
     let x2 = BigUint::to_bytes_be(&xy.x);
     let y2 = BigUint::to_bytes_be(&xy.y);

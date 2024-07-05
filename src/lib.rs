@@ -1,7 +1,11 @@
+use std::{cell::RefCell};
+
 use num_bigint::BigUint;
 use num_traits::Num;
+use rand::SeedableRng;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
+use rand_chacha::ChaCha8Rng;
 
 mod crypto;
 
@@ -12,6 +16,21 @@ mod crypto;
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+thread_local! {
+    static RNG: RefCell<Option<ChaCha8Rng>> = RefCell::new(None);
+}
+
+#[wasm_bindgen]
+pub fn init_rng_pool(seed: &[u8]) {
+    let mut seed_arr = [0u8; 32];
+    seed_arr.copy_from_slice(seed);
+    RNG.with(|rng| {
+        *rng.borrow_mut() = Some(
+            ChaCha8Rng::from_seed(seed_arr)
+        );
+    });
+}
 
 #[wasm_bindgen]
 pub fn sm3() -> String {
@@ -29,8 +48,7 @@ pub fn sm2_encrypt(pk: &str, data: &[u8]) -> String {
     data_enc
 }
 
-
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 #[allow(non_snake_case)] // for JS interop and API consistency
@@ -54,7 +72,7 @@ pub fn sm2_generate_keypair() -> JsValue {
 #[wasm_bindgen]
 pub fn compress_public_key_hex(s: &str) -> Result<String, JsError> {
     if s.len() != 130 {
-        return Err(JsError::new("invalid public key length"))
+        return Err(JsError::new("invalid public key length"));
     }
     let public_key = &s[2..];
     let x_hex: &str = &public_key[0..64];
@@ -71,7 +89,6 @@ pub fn sm4_encrypt(input: String, key: &[u8], iv: &[u8]) -> String {
     let data = crypto::sm4::CryptSM4CBC::new(key, iv).encrypt_cbc(input.as_bytes());
     hex::encode(data)
 }
-
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]

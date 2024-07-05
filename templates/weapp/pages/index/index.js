@@ -4,6 +4,16 @@ import smCrypto from '../../sm-crypto/index'
 Page({
   async onLoad() {
     await smCrypto.initSMCrypto()
+
+    await new Promise(rs => {
+      wx.getRandomValues({
+        length: 32,
+        success(res) {
+          smCrypto.sm2.initRNGPool(new Uint8Array(res.randomValues));
+          rs()
+        }
+      })
+    })
     // const kp = await smCrypto.sm2.generateKeyPairHex()
     // console.log(kp)
     // const compressed = smCrypto.sm2.compressPublicKeyHex(kp.publicKey);
