@@ -6,11 +6,12 @@ use std::collections::HashMap;
 use num_bigint::BigUint;
 use num_traits::*;
 use num_integer::*;
-use rand::{seq::SliceRandom, RngCore};
+use rand::{seq::SliceRandom, thread_rng, RngCore};
+use wasm_bindgen::convert::IntoWasmAbi;
+use web_sys::console;
 use std::path::Path;
 use std::fs;
 use lazy_static::*;
-use std::borrow::Cow;
 use bytes::{BytesMut, BufMut};
 
 
@@ -25,6 +26,7 @@ lazy_static! {
         ecc_table
     };
     static ref PARA_LEN: usize = ECC_TABLE.get(&"n").unwrap().len();
+    static ref BYTES: usize = PARA_LEN.div_ceil(2);
     static ref ECC_N: &'static str = ECC_TABLE.get(&"n").unwrap();
     static ref ECC_P: &'static str = ECC_TABLE.get(&"p").unwrap();
     static ref ECC_G: &'static str = ECC_TABLE.get(&"g").unwrap();
@@ -65,25 +67,24 @@ fn submod(a: &BigUint, b: &BigUint, ecc_p: &BigUint) -> BigUint {
     }
 }
 
-fn get_best_rng() -> Box<dyn RngCore> {
-    let host_rng = crate::RNG.with(|rng| {
-        rng.borrow().as_ref().map(|r| r.clone())
-    });
-
-    if let Some(rng) = host_rng {
-        Box::new(rng)
-    } else {
-        Box::new(rand::thread_rng())
-    }
-}
-
 
 fn random_hex(x: usize) -> String {
     let c = vec!["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
     let mut s: String = "".to_string();
-    for _ in 0..x {
-        s += *c.choose(&mut get_best_rng()).unwrap();
-    }
+
+    crate::RNG.with(|rng| {
+        let mut rng = rng.borrow_mut();
+        if let Some(rng) = rng.as_mut() {
+            for _ in 0..x {
+                s += *c.choose(rng).unwrap();
+            }
+        } else {
+            let mut rng: rand::prelude::ThreadRng = thread_rng();
+            for _ in 0..x {
+                s += *c.choose(&mut rng).unwrap();
+            }
+        }
+    });
     s
 }
 
@@ -145,11 +146,42 @@ fn kdf(z: &[u8], klen: usize) -> Vec<u8> {
 }
 
 fn from_hex_affine(public_key: &str) -> Point {
-    Point {
-        x: BigUint::from_str_radix(&public_key[0..*PARA_LEN], 16).unwrap(), 
-        y: BigUint::from_str_radix(&public_key[*PARA_LEN..], 16).unwrap(), 
-        z: BigUint::one()
+    let public_key_hex = hex::decode(public_key).unwrap();
+    let head = public_key_hex[0];
+    let tail = &public_key_hex[1..];
+    let p = BigUint::from_str_radix(*ECC_P, 16).unwrap();
+    let byte_len = public_key_hex.len();
+    if byte_len == *BYTES + 1 && (head == 0x02 || head == 0x03) {
+        let x = BigUint::from_bytes_be(tail);
+        // verify x is on field element, by checking 0 < x < p
+        let y_sqr = equation(&x);
+        let y = y_sqr.modpow(&((&p + BigUint::new(vec![1])) >> 2), &p);
+        let is_y_odd = !y.bit(0);
+        let is_head_odd = head == 0x02;
+        return if is_y_odd != is_head_odd {
+            Point {
+                x, 
+                // y is odd, so y = p - y
+                y: submod(&p, &y, &p),
+                z: BigUint::one()
+            }
+        } else {
+            Point {
+                x, 
+                y, 
+                z: BigUint::one()
+            }
+        }
+    } else if byte_len == *BYTES * 2 + 1 && head == 0x04 {
+        let x = BigUint::from_bytes_be(&tail[0..*BYTES]);
+        let y = BigUint::from_bytes_be(&tail[*BYTES..]);
+        return Point {
+            x, 
+            y, 
+            z: BigUint::one()
+        }
     }
+    panic!("Invalid public key format, key length is {}, head is {}", public_key.len(), head);
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -280,6 +312,13 @@ fn kg(k: BigUint, point: &Point) -> Point {
     convert_jacb_to_nor(temp)
 }
 
+fn equation(x: &BigUint) -> BigUint {
+    let ecc_a = BigUint::from_str_radix(*ECC_A, 16).unwrap();
+    let ecc_b = BigUint::from_str_radix(*ECC_B, 16).unwrap();
+    let ecc_p = BigUint::from_str_radix(*ECC_P, 16).unwrap();
+    (x * x * x + ecc_a * x + ecc_b) % ecc_p
+}
+
 /// Check whether the public key is legal. The input public key may or may not contain the "04" prefix.
 pub fn pubkey_valid(public_key: &str) -> bool {    
     let a = BigUint::from_str_radix(*ECC_A, 16).unwrap();
@@ -295,17 +334,18 @@ pub fn pubkey_valid(public_key: &str) -> bool {
     np0 && on_curve
 }
 
-fn pubkey_trim<'a>(public_key: &'a str) -> Cow<'a, str> {
-    if public_key.len() == 130 && &public_key[0..2] == "04" {
-        Cow::Borrowed(&public_key[2..])
-    } else {
-        Cow::Borrowed(public_key)
-    }
-}
+// fn pubkey_trim<'a>(public_key: &'a str) -> Cow<'a, str> {
+//     if public_key.len() == 130 && &public_key[0..2] == "04" {
+//         Cow::Borrowed(&public_key[2..])
+//     } else {
+//         Cow::Borrowed(public_key)
+//     }
+// }
 
 
 pub fn gen_keypair() -> (String, String) {
     let d = random_hex(*PARA_LEN);
+    console::log_1(&d.clone().into());
     let pa = kg(BigUint::from_str_radix(&d, 16).unwrap(), &ECC_G_POINT);
     let pa = format_hex!(pa.x, pa.y);
     (d, pa)
@@ -718,25 +758,25 @@ impl<'a> Sign<'a> {
 
 pub struct Verify<'a> {
     pub id: &'a [u8], 
-    pub public_key: Cow<'a, str>
+    pub public_key: &'a str
 }
 
 impl<'a> Default for Verify<'a> {
     fn default() -> Self {
-        Verify {id: b"1234567812345678", public_key: Cow::Borrowed("")}
+        Verify {id: b"1234567812345678", public_key: ""}
     }
 }
 
 impl<'a> Verify<'a> {
     /// Initialize a sm2 verify instance with default id b"1234567812345678".
     pub fn new(public_key: &'a str) -> Self {
-        let public_key = pubkey_trim(public_key);
+        // let public_key = pubkey_trim(public_key);
         Verify{public_key: public_key, ..Verify::default()}
     }
 
     /// Initialize a sm2 verify instance with a custom id.
     pub fn new_with_id(id: &'a [u8], public_key: &'a str) -> Self {
-        Verify {id: id, public_key: Cow::Borrowed(public_key)}
+        Verify {id, public_key}
     }
 
     /// Verify with sm3.
@@ -755,12 +795,12 @@ impl<'a> Verify<'a> {
 }
 
 pub struct Encrypt<'a> {
-    pub public_key: Cow<'a, str> 
+    pub public_key: &'a str
 }
 
 impl<'a> Encrypt<'a> {
     pub fn new(public_key: &'a str) -> Self {
-        let public_key = pubkey_trim(public_key);
+        // let public_key = pubkey_trim(public_key);
         Encrypt{public_key}
     }
 

@@ -98,9 +98,13 @@ Alternatively, you can see the code snippet for several DevTools:
 ### SM2 Public Key Cryptography
 
 ```typescript
+import * as smCrypto from 'sm-crypto'
 
+// seeding RNG, it is strongly recommended by using a seed has enough entropy.
+sm2.initRNGPool(new Uint8Array(32))
+// generating key pair
 let keypair = await sm2.generateKeyPairHex() // Promise<{ privateKey: string, publicKey: string }>
-let compressedPublicKey = sm2.compressPublicKeyHex(publicKey) 
+let compressedPublicKey = sm2.compressPublicKeyHex(publicKey)
 ```
 
 ## License
@@ -108,14 +112,6 @@ let compressedPublicKey = sm2.compressPublicKeyHex(publicKey)
 MIT
 
 ## Development & Contribution
-
-You need Rust and wasm-pack to build the project. 
-
-```bash
-rustup toolchain install nightly
-rustup target add wasm32-unknown-unknown
-cargo install wasm-pack
-```
 
 For usability, we use some nightly features, so you may need to install nightly Rust:
 
