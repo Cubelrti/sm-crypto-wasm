@@ -58,6 +58,9 @@ It is strongly recommended to use secure random number generation for security. 
 
 Internally we use `ChaCha8` for random number generation, which is secure enough for most cases. But for security, the seed should be generated from a secure source and contain enough entropy.
 
+## Performance
+
+Compared to non-WebAssembly version of `sm-crypto-v2`, this library is slower in some cases, but it is still acceptable for most cases. The performance is still under development, and we will try to optimize it in the future.
 
 ## Background
 

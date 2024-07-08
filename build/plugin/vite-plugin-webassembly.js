@@ -91,6 +91,23 @@ export default function webAssemblyPlugin(options) {
               }
             }
           }
+
+          // ios Memory hack
+        //   function getUint8Memory0() {
+        //     if (cachedUint8Memory0 === null || cachedUint8Memory0.byteLength === 0) {
+        //         cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer);
+        //     }
+        //     return cachedUint8Memory0;
+        // }
+          // we need to remove te if part, just returning the wrapped buffer.
+          // name can also be getFloat64Memory0 and getUint32Memory
+          if (n.type === 'FunctionDeclaration' && /getUint8Memory0|getFloat64Memory0|getUint32Memory|getInt32Memory/.test(n.id.name)) {
+            const memoryType = n.id.name.replace('get', '').replace('Memory0', '');
+            console.log('patching', memoryType)
+            const code = `return new ${memoryType}Array(wasm.memory.buffer);`;
+            n.body.body = parseModule(code).$ast.body;
+          }
+
           // debug only
           // add a console.log to all functions like
           // imports.wbg.__wbindgen_memory = function() {
@@ -104,15 +121,15 @@ export default function webAssemblyPlugin(options) {
           //   return addHeapObject(ret);
           // };
 
-          // if (n.type === 'ExpressionStatement' && n.expression.type === 'AssignmentExpression'
-          //   && n.expression.left.property?.name?.startsWith('__wb')
-          //   && n.expression.right.type === 'FunctionExpression'
-          //   && !n.$$hasConsoleLog
-          // ) {
-          //   n.$$hasConsoleLog = true;
-          //   const code = `console.log('calling ${n.expression.left.property.name}');`;
-          //   n.expression.right.body.body.unshift(parseModule(code).$ast.body[0]);
-          // }
+          if (n.type === 'ExpressionStatement' && n.expression.type === 'AssignmentExpression'
+            && n.expression.left.property?.name?.startsWith('__wb')
+            && n.expression.right.type === 'FunctionExpression'
+            && !n.$$hasConsoleLog
+          ) {
+            n.$$hasConsoleLog = true;
+            const code = `console.log('calling ${n.expression.left.property.name}');`;
+            n.expression.right.body.body.unshift(parseModule(code).$ast.body[0]);
+          }
 
           // Recursively traverse nested nodes
           for (const key in n) {
