@@ -59,6 +59,38 @@ export default function webAssemblyPlugin(options) {
           }`;
             n.init = parseModule(code).$ast.body[0].declarations[0].init;
           }
+
+          // add a timer call for all exported functions like export function sm2() {}
+          if (n.type === 'ExportNamedDeclaration' && n.declaration?.type === 'FunctionDeclaration' && !n.$$hasTimer) {
+            n.$$hasTimer = true;
+            const code = `const timer = Date.now();`;
+            n.declaration.body.body.unshift(parseModule(code).$ast.body[0]);
+            const returnStatement = n.declaration.body.body.find(n => {
+              // recursively find the return statement
+              if (n.type === 'ReturnStatement') {
+                return true;
+              }
+              // maybe inside a try block
+              if (n.type === 'TryStatement') {
+                return n.block.body.some(n => n.type === 'ReturnStatement');
+              }
+            });
+            console.log(n.declaration.body.body.length)
+            const code2 = `console.log('${n.declaration?.id.name} took', Date.now() - timer, 'ms');`;
+            if (returnStatement) {
+              console.log('???', n.declaration?.id.name)
+              // insert before the return statement
+              // find the index of the return statement
+              // in a try block, insert before the return statement
+              if (returnStatement.type === 'TryStatement') {
+                const index2 = returnStatement.block.body.indexOf(returnStatement.block.body.find(n => n.type === 'ReturnStatement'));
+                returnStatement.block.body.splice(index2, 0, parseModule(code2).$ast.body[0]);
+              } else {
+                const index = n.declaration.body.body.indexOf(returnStatement);
+                n.declaration.body.body.splice(index, 0, parseModule(code2).$ast.body[0]);  
+              }
+            }
+          }
           // debug only
           // add a console.log to all functions like
           // imports.wbg.__wbindgen_memory = function() {

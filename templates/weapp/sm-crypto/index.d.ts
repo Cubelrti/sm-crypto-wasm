@@ -19,7 +19,8 @@ declare const _default: {
     sm2: {
         generateKeyPairHex: typeof sm2_generate_keypair;
         compressPublicKeyHex: typeof compress_public_key_hex;
-        encrypt: typeof sm2_encrypt;
+        encrypt(msg: Uint8Array, publicKey: string, options: SM2Options): string | Uint8Array;
+        decrypt(msg: Uint8Array, privateKey: string, options: SM2Options): string | Uint8Array;
         initRNGPool: typeof init_rng_pool;
     };
     sm3: typeof sm3;
@@ -38,7 +39,10 @@ declare interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly init_rng_pool: (a: number, b: number) => void;
     readonly sm3: (a: number) => void;
-    readonly sm2_encrypt: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly sm2_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly sm2_encrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly sm2_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly sm2_decrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_generate_keypair: () => number;
     readonly compress_public_key_hex: (a: number, b: number, c: number) => void;
     readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
@@ -56,16 +60,15 @@ declare function initSMCrypto(): Promise<void>;
 export declare type Mod = typeof __wbg_init;
 
 /**
- * @param {string} pk
- * @param {Uint8Array} data
- * @returns {string}
- */
-declare function sm2_encrypt(pk: string, data: Uint8Array): string;
-
-/**
  * @returns {any}
  */
 declare function sm2_generate_keypair(): any;
+
+declare interface SM2Options {
+    cipherMode: 1 | 0;
+    asn1: boolean;
+    output: 'array' | 'string';
+}
 
 /**
  * @returns {string}

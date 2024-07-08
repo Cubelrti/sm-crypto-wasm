@@ -47,7 +47,7 @@ export default defineConfig({
 
     }),
     wasmPackPlugin({
-      extraArgs: '--target web --dev'
+      extraArgs: '--target web --release'
     }),
     webassemblyPlugin({
       name: 'WXWebAssembly',

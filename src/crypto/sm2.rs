@@ -102,7 +102,7 @@ fn appendzero(data: &[u8], size: usize) -> Vec<u8> {
     }
 }
 
-fn concvec(vec1: &[u8], vec2: &[u8]) -> Vec<u8> {
+pub fn concvec(vec1: &[u8], vec2: &[u8]) -> Vec<u8> {
     let mut vec1 = vec1.to_vec();
     vec1.extend(vec2);
     vec1
@@ -175,6 +175,15 @@ fn from_hex_affine(public_key: &str) -> Point {
     } else if byte_len == *BYTES * 2 + 1 && head == 0x04 {
         let x = BigUint::from_bytes_be(&tail[0..*BYTES]);
         let y = BigUint::from_bytes_be(&tail[*BYTES..]);
+        return Point {
+            x, 
+            y, 
+            z: BigUint::one()
+        }
+    } else if byte_len == *BYTES * 2 {
+        // raw xy
+        let x = BigUint::from_bytes_be(&public_key_hex[0..*BYTES]);
+        let y = BigUint::from_bytes_be(&public_key_hex[*BYTES..]);
         return Point {
             x, 
             y, 
@@ -438,7 +447,7 @@ fn verify_from_file(id: &[u8], data: &[u8], sign_file: &str, public_key: &str) -
     verify(id, data, &sign_data, public_key)
 }
 
-fn encrypt(data: &[u8], public_key: &str) -> Vec<u8> {
+fn encrypt(data: &[u8], public_key: &str, c1c2c3: bool) -> Vec<u8> {
     let k = random_hex(*PARA_LEN);
     let c1xyz = kg(BigUint::from_str_radix(k.as_str(), 16).unwrap(), &ECC_G_POINT);
     let c1x = appendzero(&BigUint::to_bytes_be(&c1xyz.x), *PARA_LEN / 2);
@@ -461,7 +470,10 @@ fn encrypt(data: &[u8], public_key: &str) -> Vec<u8> {
         let h = concvec!(&x2, data, &y2);
         let c3 = sm3_hash(&h);
         let c3 = hex::decode(c3).unwrap();
-        let cipher = concvec!(&c1, &c3, &c2);
+        let cipher = match c1c2c3 {
+            true => concvec!(&c1, &c2, &c3),
+            false => concvec!(&c1, &c3, &c2),
+        };
         cipher
     };
     cipher
@@ -483,13 +495,6 @@ fn decrypt(data: &[u8], private_key: &str) -> Vec<u8> {
     result
 }
 
-fn encrypt_c1c2c3(data: &[u8], public_key: &str) -> Vec<u8> {
-    let cipher_c1c3c2 = encrypt(data, public_key);
-    let c1 = &cipher_c1c3c2[0..64];
-    let c3 = &cipher_c1c3c2[64..96];
-    let c2 = &cipher_c1c3c2[96..];
-    concvec!(c1, c2, c3)
-}
 
 fn decrypt_c1c2c3(data: &[u8], private_key: &str) -> Vec<u8> {
     let c1 = &data[0..64];
@@ -499,8 +504,8 @@ fn decrypt_c1c2c3(data: &[u8], private_key: &str) -> Vec<u8> {
     decrypt(&cipher_c1c3c2, private_key)
 }
 
-fn encrypt_asna1(data: &[u8], public_key: &str) -> Vec<u8> {
-    let cipher = encrypt(data, public_key);
+fn encrypt_asna1(data: &[u8], public_key: &str, c1c2c3: bool) -> Vec<u8> {
+    let cipher = encrypt(data, public_key, c1c2c3);
     let x = BigUint::from_bytes_be(&cipher[0..32]);
     let y = BigUint::from_bytes_be(&cipher[32..64]);
     let sm3 = &cipher[64..96];
@@ -533,33 +538,14 @@ fn decrypt_asna1(data: &[u8], private_key: &str) -> Vec<u8> {
     decrypt(&cipher, private_key)
 }
 
-fn encrypt_hex(data: &[u8], public_key: &str) -> String {
-    hex::encode(encrypt(data, public_key))
+fn encrypt_hex(data: &[u8], public_key: &str, c1c2c3: bool) -> String {
+    hex::encode(encrypt(data, public_key, c1c2c3))
 }
 
 fn decrypt_hex(data: &str, private_key: &str) -> Vec<u8> {
     decrypt(&hex::decode(data).unwrap(), private_key)
 }
 
-fn encrypt_base64(data: &[u8], public_key: &str) -> String {
-    base64::encode(encrypt(data, public_key))
-}
-
-fn decrypt_base64(data: &str, private_key: &str) -> Vec<u8> {
-    decrypt(&base64::decode(data).unwrap(), private_key)
-}
-
-fn encrypt_to_file(data: &[u8], enc_file: &str, public_key: &str) {
-    let enc_file = Path::new(enc_file);
-    let enc_data = encrypt_asna1(data, public_key);
-    fs::write(enc_file, &enc_data[..]).unwrap();
-}
-
-fn decrypt_from_file(enc_file: &str, private_key: &str) -> Vec<u8> {
-    let enc_file = Path::new(enc_file);
-    let enc_data = fs::read(enc_file).unwrap();
-    decrypt_asna1(&enc_data, private_key)
-}
 
 fn kexhat(x: BigUint) -> BigUint {
     let w_2: Vec<u8> = [0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].to_vec();
@@ -804,29 +790,18 @@ impl<'a> Encrypt<'a> {
         Encrypt{public_key}
     }
 
-    pub fn encrypt(&self, data: &[u8]) -> Vec<u8> {
-        encrypt(data, &self.public_key)
+    pub fn encrypt(&self, data: &[u8], c1c2c3: bool) -> Vec<u8> {
+        encrypt(data, &self.public_key, c1c2c3)
     }
 
-    pub fn encrypt_c1c2c3(&self, data: &[u8]) -> Vec<u8> {
-        encrypt_c1c2c3(data, &self.public_key)
+    pub fn encrypt_asna1(&self, data: &[u8], c1c2c3: bool) -> Vec<u8> {
+        encrypt_asna1(data, &self.public_key, c1c2c3)
     }
 
-    pub fn encrypt_asna1(&self, data: &[u8]) -> Vec<u8> {
-        encrypt_asna1(data, &self.public_key)
+    pub fn encrypt_hex(&self, data: &[u8], c1c2c3: bool) -> String {
+        encrypt_hex(data, &self.public_key, c1c2c3)
     }
 
-    pub fn encrypt_hex(&self, data: &[u8]) -> String {
-        encrypt_hex(data, &self.public_key)
-    }
-
-    pub fn encrypt_base64(&self, data: &[u8]) -> String {
-        encrypt_base64(data, &self.public_key)
-    }
-
-    pub fn encrypt_to_file(&self, data: &[u8], enc_file: &str) {
-        encrypt_to_file(data, enc_file, &self.public_key)
-    }
 }
 
 pub struct Decrypt<'a> {
@@ -852,14 +827,6 @@ impl<'a> Decrypt<'a> {
 
     pub fn decrypt_hex(&self, data: &str) -> Vec<u8> {
         decrypt_hex(data, self.private_key)
-    }
-
-    pub fn decrypt_base64(&self, data: &str) -> Vec<u8> {
-        decrypt_base64(data, self.private_key)
-    }
-
-    pub fn decrypt_from_file(&self, enc_file: &str) -> Vec<u8> {
-        decrypt_from_file(enc_file, self.private_key)
     }
 }
 

@@ -6,6 +6,7 @@ use rand::SeedableRng;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 use rand_chacha::ChaCha8Rng;
+use crate::crypto::sm2::concvec;
 
 mod crypto;
 
@@ -40,13 +41,61 @@ pub fn sm3() -> String {
     str
 }
 
+
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)] // for JS interop and API consistency
+pub struct Sm2EncryptOptions {
+    pub asn1: bool,
+    pub c1c2c3: bool,
+}
+
+
 #[wasm_bindgen]
-pub fn sm2_encrypt(pk: &str, data: &[u8]) -> String {
+pub fn sm2_encrypt(pk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
     console::log_1(&JsValue::from_str("invoked sm2_encrypt"));
+    let options: Sm2EncryptOptions = serde_wasm_bindgen::from_value(options).unwrap();
     let enc_ctx = crypto::sm2::Encrypt::new(&pk);
-    console::log_1(&JsValue::from_str(hex::encode(data).as_str()));
-    let data_enc = enc_ctx.encrypt_hex(&data);
+    let data_enc = match options.asn1 {
+        true => enc_ctx.encrypt_asna1(data, options.c1c2c3),
+        false => enc_ctx.encrypt(data, options.c1c2c3),
+    };
     data_enc
+}
+
+#[wasm_bindgen]
+pub fn sm2_encrypt_hex(pk: &str, data: &[u8], options: JsValue) -> String {
+    console::log_1(&JsValue::from_str("invoked sm2_encrypt_hex"));
+    let data_enc = sm2_encrypt(pk, data, options);
+    hex::encode(data_enc)
+}
+
+
+#[wasm_bindgen]
+pub fn sm2_decrypt(sk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
+    console::log_1(&"invoked sm2_decrypt".into());
+    let options: Sm2EncryptOptions = serde_wasm_bindgen::from_value(options).unwrap();
+
+    let dec_ctx = crypto::sm2::Decrypt::new(sk);
+    let data_dec = match (options.asn1, options.c1c2c3) {
+        (false, false) => dec_ctx.decrypt(data),
+        (false, true) => dec_ctx.decrypt_c1c2c3(data),
+        (true, false) => dec_ctx.decrypt_asna1(data),
+        (true, true) => {
+            let c1: &[u8] = &data[0..64];
+            let c2 = &data[64..(data.len() - 32)];
+            let c3 = &data[(data.len() - 32)..];
+            let cipher_c1c3c2 = concvec!(c1, c3, c2);   
+            dec_ctx.decrypt_asna1(&cipher_c1c3c2)
+        },
+    };
+    data_dec
+}
+
+#[wasm_bindgen]
+pub fn sm2_decrypt_hex(sk: &str, data: &[u8], options: JsValue) -> String {
+    console::log_1(&"invoked sm2_decrypt".into());
+    let data_dec = sm2_decrypt(sk, data, options);
+    hex::encode(data_dec)
 }
 
 use serde::{Deserialize, Serialize};

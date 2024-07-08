@@ -15,21 +15,26 @@ Page({
         }
       })
     })
-    const kp = {publicKey: "0405232c08fa8b03e23e8ba5eb4045c4b1e719fa771a400afcb42ff40db035344ce52ac98b254136ffaa0ae672cdd15db340db2b6d9012a699d935dc4eafcb9e4d", privateKey: "73f48320b75424501b71dea57d26a352fdf574a3ec3a5e305710bd6abd21cd9b"}
+    const kp = smCrypto.sm2.generateKeyPairHex()
     console.log(kp)
     const compressed = smCrypto.sm2.compressPublicKeyHex(kp.publicKey);
     console.log(compressed)
-    const sm2Cbc = smCrypto.sm2.encrypt(kp.publicKey, new Uint8Array([
-      0xde, 0xad, 0xbe, 0xef
-    ]))
+    const sm2Cbc = smCrypto.sm2.encrypt(new Uint8Array(
+      100 * 1000
+    ), kp.publicKey, { output: 'array'})
     console.log(sm2Cbc)
-    const sm2Cbc2 = smCrypto.sm2.encrypt(compressed, new Uint8Array([
+    const sm2Cbc2 = smCrypto.sm2.encrypt(new Uint8Array([
       0xde, 0xad, 0xbe, 0xef
-    ]))
+    ]), compressed, { output: 'array'})
     console.log(sm2Cbc2)
+    // decrypt
+    const sm2CbcD = smCrypto.sm2.decrypt(sm2Cbc2, kp.privateKey, {
+      output: 'string'
+    })
+    console.log(sm2CbcD)
     const sm3Result = smCrypto.sm3()
     console.log(sm3Result)
-    const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
+    const sm4Result = smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
     console.log(sm4Result)
     global.smCrypto = smCrypto
   },
