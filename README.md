@@ -201,8 +201,7 @@ If you want to support more platforms, please open an issue or PR to discuss.
 
 ### OpenHarmony
 
-For OpenHarmony, since there is no WebAssembly support, you can use `smcrypto` crate for Rust, and compile it to cdylib for C/C++ usage. And HarmonyOS provides a Crypto Framework for SM2/SM3/SM4, you can use it directly.
+For OpenHarmony, since there is no WebAssembly support, you can compile the Rust core of this repo (under `crypto` folder), and compile it to cdylib for C/C++ usage. And HarmonyOS provides a [Crypto Framework](https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/js-apis-cryptoframework-V5) for SM2/SM3/SM4, you can use it directly.
 
-See also: https://doc.rust-lang.org/rustc/platform-support/openharmony.html and https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/js-apis-cryptoframework-V5
+You can refer to [Official Rust Platform support](https://doc.rust-lang.org/rustc/platform-support/openharmony.html) or [ohos-rs](https://ohos.rs/docs/basic.html) for more information.
 
-You can refer to [this article](https://ohos.rs/docs/basic.html) for more information.
