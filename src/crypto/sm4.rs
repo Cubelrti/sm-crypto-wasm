@@ -265,7 +265,7 @@ pub fn decrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8], tag:
         ghash.update_padded(nonce);
 
         let mut block = ghash::Block::default();
-        let nonce_bits = 32u64 * 8;
+        let nonce_bits = nonce.len() * 8;
         block[8..].copy_from_slice(&nonce_bits.to_be_bytes());
         ghash.update(&[block]);
     }
@@ -274,7 +274,9 @@ pub fn decrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8], tag:
     let mut counter_block = j0.clone();
 
     // Compute GHASH for AAD
-    ghash.update_padded(aad);
+    if aad.len() > 0 {
+        ghash.update_padded(aad);
+    }
     for (i, chunk) in input_data.chunks(block_size).enumerate() {
 
         // Increment the counter

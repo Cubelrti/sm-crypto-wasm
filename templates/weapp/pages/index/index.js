@@ -79,19 +79,19 @@ Page({
     })
     console.log(sm4Result)
     const gcm = smCrypto.sm4.gcm.encrypt(
-      deadbeef, 
-      hexToBytes("0123456789ABCDEFFEDCBA9876543210"),
-      hexToBytes("00001234567800000000ABCD"),
-      hexToBytes("FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2")
+      new Uint8Array([101, 120, 97, 109, 112, 108, 101, 112, 108, 97, 105, 110, 116, 101, 120, 116]), 
+      hexToBytes("6368616e676520746869732070617373"),
+      hexToBytes("07d168e0517656ab7131f495"),
+      new Uint8Array(0)
     )
     console.log(bytesToHex(gcm))
     const gcmPlain = smCrypto.sm4.gcm.decrypt(
-      gcm,
-      hexToBytes("0123456789ABCDEFFEDCBA9876543210"),
-      hexToBytes("00001234567800000000ABCD"),
-      hexToBytes("FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2")
+      gcm, 
+      hexToBytes("6368616e676520746869732070617373"),
+      hexToBytes("07d168e0517656ab7131f495"),
+      new Uint8Array(0)
     )
-    console.log(bytesToHex(gcmPlain))
+    console.log(gcmPlain)
     global.smCrypto = smCrypto
   },
   data: {
