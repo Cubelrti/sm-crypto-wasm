@@ -222,6 +222,13 @@ pub fn sm4_encrypt_gcm(input: &[u8], key: &[u8], iv: &[u8], aad: &[u8]) -> Vec<u
 }
 
 #[wasm_bindgen]
+pub fn sm4_decrypt_gcm(input: &[u8], key: &[u8], iv: &[u8], aad: &[u8]) -> Vec<u8> {
+    console::log_1(&JsValue::from_str("invoked sm4_decrypt_gcm"));
+    let (data, tag) = input.split_at(input.len() - 16);
+    crypto::sm4::decrypt_gcm(data, key, iv, aad, tag).unwrap_or([].into())
+}
+
+#[wasm_bindgen]
 pub fn sm4_encrypt_hex(input: &[u8], key: &[u8], options: JsValue) -> String {
     console::log_1(&JsValue::from_str("invoked sm4_encrypt_hex"));
     let data = sm4_encrypt(input, key, options);

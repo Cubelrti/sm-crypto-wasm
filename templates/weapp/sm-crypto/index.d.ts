@@ -30,7 +30,10 @@ declare const _default: {
     sm4: {
         encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): string | Uint8Array;
         decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): Uint8Array;
-        gcm: typeof sm4_encrypt_gcm;
+        gcm: {
+            encrypt: typeof sm4_encrypt_gcm;
+            decrypt: typeof sm4_decrypt_gcm;
+        };
     };
 };
 export default _default;
@@ -56,7 +59,8 @@ declare interface InitOutput {
     readonly compress_public_key_hex: (a: number, b: number, c: number) => void;
     readonly sm3_hmac: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-    readonly sm4_encrypt_gcm: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+    readonly sm4_encrypt_gcm: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
+    readonly sm4_decrypt_gcm: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
     readonly sm4_encrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm4_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly main_js: () => void;
@@ -107,9 +111,18 @@ declare function sm3_hmac(key: Uint8Array, msg: Uint8Array): Uint8Array;
  * @param {Uint8Array} key
  * @param {Uint8Array} iv
  * @param {Uint8Array} aad
- * @returns {any}
+ * @returns {Uint8Array}
  */
-declare function sm4_encrypt_gcm(input: Uint8Array, key: Uint8Array, iv: Uint8Array, aad: Uint8Array): any;
+declare function sm4_decrypt_gcm(input: Uint8Array, key: Uint8Array, iv: Uint8Array, aad: Uint8Array): Uint8Array;
+
+/**
+ * @param {Uint8Array} input
+ * @param {Uint8Array} key
+ * @param {Uint8Array} iv
+ * @param {Uint8Array} aad
+ * @returns {Uint8Array}
+ */
+declare function sm4_encrypt_gcm(input: Uint8Array, key: Uint8Array, iv: Uint8Array, aad: Uint8Array): Uint8Array;
 
 declare interface SM4EncryptionOptions {
     mode?: 'cbc' | 'ecb' | 'ctr' | 'gcm';

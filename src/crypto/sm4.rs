@@ -246,6 +246,79 @@ pub fn encrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8]) -> (
     (ciphertext, ctr_tag)
 }
 
+pub fn decrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8], tag: &[u8]) -> Result<Vec<u8>, &'static str> {
+    let sk = set_key(key, Mode::Sm4Encrypt);
+
+    // Create GHASH instance
+    let mut ghash_key: Array<u8, U16> = ghash::Key::default();
+    let slice = one_round(sk.to_owned(), ghash_key.to_vec());
+    ghash_key = Array::<u8, U16>::try_from_iter(slice).expect("slice with incorrect length");
+
+    let mut ghash: GHash = GHash::new(&ghash_key);
+
+    // Generate initial counter block (J0)
+    let mut j0 = vec![0u8; 16];
+    if nonce.len() == 12 {
+        j0[..12].copy_from_slice(nonce);
+        j0[15] = 0x01;
+    } else {
+        ghash.update_padded(nonce);
+
+        let mut block = ghash::Block::default();
+        let nonce_bits = 32u64 * 8;
+        block[8..].copy_from_slice(&nonce_bits.to_be_bytes());
+        ghash.update(&[block]);
+    }
+    let mut plaintext = vec![0u8; input_data.len()];
+    let block_size = 16;
+    let mut counter_block = j0.clone();
+
+    // Compute GHASH for AAD
+    ghash.update_padded(aad);
+    for (i, chunk) in input_data.chunks(block_size).enumerate() {
+
+        // Increment the counter
+        for k in (0..16).rev() {
+            if counter_block[k] == 255 {
+                counter_block[k] = 0;
+            } else {
+                counter_block[k] += 1;
+                break;
+            }
+        }
+        let block_offset = i * block_size;
+
+        // Encrypt the counter block to produce the keystream block
+        let keystream_block = one_round(sk.to_owned(), counter_block.to_owned());
+
+        // XOR the plaintext with the keystream block to produce the ciphertext
+        for j in 0..chunk.len() {
+            plaintext[block_offset + j] = chunk[j] ^ keystream_block[j];
+        }
+
+        ghash.update_padded(&input_data[block_offset..(block_offset + chunk.len())]);
+    }
+
+    // Compute GHASH for length block
+    let mut length_block = [0u8; 16];
+    let aad_len_bits = (aad.len() as u64) * 8;
+    let cipher_len_bits = (plaintext.len() as u64) * 8;
+    length_block[..8].copy_from_slice(&aad_len_bits.to_be_bytes());
+    length_block[8..].copy_from_slice(&cipher_len_bits.to_be_bytes());
+    ghash.update_padded(&length_block);
+
+    // Final GHASH to produce the authentication tag
+    let auth_tag = ghash.finalize().to_vec();
+    // Encrypt the authentication tag
+    let ctr_tag = encrypt_ctr(&auth_tag, key, &j0, false);
+
+    if ctr_tag != tag {
+        return Err("Invalid authentication tag");
+    }
+
+    Ok(plaintext)
+}
+
 fn encrypt_ecb(input_data: &[u8], key: &[u8], pkcs7: bool) -> Vec<u8> {
     let sk = set_key(key, Mode::Sm4Encrypt);
     let input_data = if pkcs7 {

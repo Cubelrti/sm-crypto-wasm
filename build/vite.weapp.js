@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import wasmPackPlugin from './plugin/vite-plugin-wasm-pack';
 import webassemblyPlugin from './plugin/vite-plugin-webassembly';
+import viteCompression from 'vite-plugin-compression';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path, { resolve } from 'node:path';
 import dts from 'vite-plugin-dts'
@@ -15,7 +16,7 @@ export default defineConfig({
     PLATFORM: 'wx',
     __CONVERT_ARRAYBUFFER__: true,
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
-    WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
+    WASM_BINARY_PATH: `'sm-crypto/crypto.wasm.br'`,
   },
   build: {
     lib: {
@@ -60,5 +61,12 @@ export default defineConfig({
         showVerboseMessages: true,
       },
     }),
+    viteCompression({
+      verbose: true,
+      filter: /\.(wasm)$/,
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      deleteOriginFile: true,
+    })
   ]
 });

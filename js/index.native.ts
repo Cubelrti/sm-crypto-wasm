@@ -1,16 +1,17 @@
 import { SM2EncryptionOptions, SM2SignatureOptions, SM4EncryptionOptions } from './common'
-import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_decrypt_hex, sm2_encrypt, sm2_encrypt_hex, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_encrypt, sm4_encrypt_gcm, sm4_encrypt_hex } from './pkg'
+import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_decrypt_hex, sm2_encrypt, sm2_encrypt_hex, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_decrypt_gcm, sm4_encrypt, sm4_encrypt_gcm, sm4_encrypt_hex } from './pkg'
 import { hexToBytes } from './utils'
 export type Mod = typeof mod
 type ArgsType<T> = T extends (...args: infer U) => any ? U : never
 
 let wasmInstance: any = null
+declare const WASM_BINARY_PATH: string
 
 async function initSMCrypto() {
   // 直接创建，不经过 worker
   if (wasmInstance) return
   try {
-    const instance = await mod('/sm-crypto/crypto.wasm')
+    const instance = await mod(WASM_BINARY_PATH)
     console.log('init sm-crypto-wasm direct success', instance)
     wasmInstance = instance
   } catch (error) {
@@ -122,6 +123,9 @@ export default {
         iv: options.iv,
       })
     },
-    gcm: sm4_encrypt_gcm,
+    gcm: {
+      encrypt: sm4_encrypt_gcm,
+      decrypt: sm4_decrypt_gcm,
+    },
   },
 }

@@ -29,5 +29,8 @@
     "vite-plugin-dts": "^3.9.1",
     "vite-plugin-static-copy": "^1.0.5",
     "which": "^4.0.0"
+  },
+  "dependencies": {
+    "vite-plugin-compression": "^0.5.1"
   }
 }
