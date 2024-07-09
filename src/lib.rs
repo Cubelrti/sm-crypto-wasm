@@ -182,12 +182,55 @@ pub fn sm3_hmac(key: &[u8], msg: &[u8]) -> Vec<u8> {
     crypto::sm3::sm3_hmac(key, msg)
 }
 
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)] // for JS interop and API consistency
+pub struct Sm4EncryptionOptions {
+    // mode?: 'cbc' | 'ecb'
+    // padding?: 'pkcs7' | 'none'
+    // iv?: string | Uint8Array
+    pub mode: String,
+    pub padding: String,
+    pub iv: Option<Vec<u8>>,
+}
+
+
 #[wasm_bindgen]
-pub fn sm4_encrypt(input: &[u8], key: &[u8], iv: &[u8]) -> Vec<u8> {
+pub fn sm4_encrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
     console::log_1(&JsValue::from_str("invoked sm4_encrypt"));
-    let data = crypto::sm4::CryptSM4CBC::new(key, iv).encrypt_cbc(input);
+    let options: Sm4EncryptionOptions = serde_wasm_bindgen::from_value(options).unwrap();
+    let data = match options.mode.as_str() {
+        "cbc" => {
+            let iv = options.iv.as_ref().map(|v| v.as_slice()).unwrap();
+            crypto::sm4::CryptSM4CBC::new(key, iv).encrypt_cbc(input, options.padding == "pkcs7")
+        },
+        "ecb" => crypto::sm4::CryptSM4ECB::new(key).encrypt_ecb(input, options.padding == "pkcs7"),
+        _ => panic!("mode {} not supported", options.mode),
+    };
     data
 }
+
+#[wasm_bindgen]
+pub fn sm4_encrypt_hex(input: &[u8], key: &[u8], options: JsValue) -> String {
+    console::log_1(&JsValue::from_str("invoked sm4_encrypt_hex"));
+    let data = sm4_encrypt(input, key, options);
+    hex::encode(data)
+}
+
+#[wasm_bindgen]
+pub fn sm4_decrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
+    console::log_1(&JsValue::from_str("invoked sm4_decrypt"));
+    let options: Sm4EncryptionOptions = serde_wasm_bindgen::from_value(options).unwrap();
+    let data = match options.mode.as_str() {
+        "cbc" => {
+            let iv = options.iv.as_ref().map(|v| v.as_slice()).unwrap();
+            crypto::sm4::CryptSM4CBC::new(key, iv).decrypt_cbc(input, options.padding == "pkcs7")
+        },
+        "ecb" => crypto::sm4::CryptSM4ECB::new(key).decrypt_ecb(input, options.padding == "pkcs7"),
+        _ => panic!("mode {} not supported", options.mode),
+    };
+    data
+}
+
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]

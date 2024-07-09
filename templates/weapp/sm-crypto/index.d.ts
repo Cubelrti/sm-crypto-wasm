@@ -27,7 +27,10 @@ declare const _default: {
     };
     sm3: typeof sm3;
     hmac: typeof sm3_hmac;
-    sm4: typeof sm4_encrypt;
+    sm4: {
+        encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): string | Uint8Array;
+        decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): Uint8Array;
+    };
 };
 export default _default;
 
@@ -51,7 +54,9 @@ declare interface InitOutput {
     readonly sm2_generate_keypair: () => number;
     readonly compress_public_key_hex: (a: number, b: number, c: number) => void;
     readonly sm3_hmac: (a: number, b: number, c: number, d: number, e: number) => void;
-    readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+    readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly sm4_encrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly sm4_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly main_js: () => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
@@ -95,12 +100,11 @@ declare function sm3(input: Uint8Array): Uint8Array;
  */
 declare function sm3_hmac(key: Uint8Array, msg: Uint8Array): Uint8Array;
 
-/**
- * @param {Uint8Array} input
- * @param {Uint8Array} key
- * @param {Uint8Array} iv
- * @returns {Uint8Array}
- */
-declare function sm4_encrypt(input: Uint8Array, key: Uint8Array, iv: Uint8Array): Uint8Array;
+declare interface SM4EncryptionOptions {
+    mode?: 'cbc' | 'ecb';
+    padding?: 'pkcs7' | 'none';
+    iv?: string | Uint8Array;
+    output?: 'array' | 'string';
+}
 
 export { }

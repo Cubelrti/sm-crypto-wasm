@@ -1,5 +1,5 @@
-import { SM2EncryptionOptions, SM2SignatureOptions } from './common'
-import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_decrypt_hex, sm2_encrypt, sm2_encrypt_hex, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_encrypt } from './pkg'
+import { SM2EncryptionOptions, SM2SignatureOptions, SM4EncryptionOptions } from './common'
+import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_decrypt_hex, sm2_encrypt, sm2_encrypt_hex, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_encrypt, sm4_encrypt_hex } from './pkg'
 import { hexToBytes } from './utils'
 export type Mod = typeof mod
 type ArgsType<T> = T extends (...args: infer U) => any ? U : never
@@ -82,8 +82,45 @@ export default {
   sm3,
   hmac: sm3_hmac,
   sm4: {
-    encrypt(data: Uint8Array, key: Uint8Array) {
-      
+    encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+      options = Object.assign({
+        mode: 'cbc',
+        padding: 'pkcs7',
+        output: 'array'
+      }, options)
+      options.iv = options.iv ? 
+        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+        : undefined
+      key = typeof key === 'string' ? hexToBytes(key) : key
+      if (options.output === 'string') {
+        return sm4_encrypt_hex(data, key, {
+          mode: options.mode,
+          padding: options.padding,
+          iv: options.iv,
+        })
+      }
+      return sm4_encrypt(data, key, {
+        mode: options.mode,
+        padding: options.padding,
+        iv: options.iv,
+      })
+    },
+    decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+      options = Object.assign({
+        mode: 'cbc',
+        padding: 'pkcs7',
+        output: 'array'
+      }, options)
+      options.iv = options.iv ? 
+        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+        : undefined
+      key = typeof key === 'string' ? hexToBytes(key) : key
+
+      return sm4_decrypt(data, key, {
+        mode: options.mode,
+        padding: options.padding,
+        iv: options.iv,
+      })
     }
   },
 }

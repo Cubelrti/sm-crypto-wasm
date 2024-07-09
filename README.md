@@ -11,7 +11,7 @@ Disclaimer: This project is still under development, and the API may change in t
 ## Features
 
 - Decent Performance for Encryption and Decryption by WebAssembly
-- SM2/SM3/SM4 Algorithms and Key Exchange Protocols
+- SM2/SM3/SM4 Algorithms and Key Exchange Protocols (will support soon)
 - Similar API to `sm-crypto` and `sm-crypto-v2` for development convenience
 
 ## Supported Runtime
@@ -162,14 +162,15 @@ let hash = sm3(new Uint8Array([
 // encrypting, return hex encoded string
 let ciphertext = sm4.encrypt(new Uint8Array([
       0xde, 0xad, 0xbe, 0xef
-]), key, { output: 'string' }) // => string
+]), key, { output: 'string', mode: 'cbc', iv: 'fedcba98765432100123456789abcdef' }) // => string
 
 // decrypting, return hex encoded string
 let plaintext = sm4.decrypt(new Uint8Array([
       0xde, 0xad, 0xbe, 0xef
-]), key, { output: 'string' }) // => string
+]), key, { output: 'string', mode: 'cbc', iv: 'fedcba98765432100123456789abcdef' }) // => string
 ```
-
+Note that input should always be Uint8Array, and output can be either Uint8Array or hex encoded string.
+You should encode the input by yourself if it is UTF-8 string by `new TextEncoder().encode`. You can refer to `js/shim-encoding.js` if you don't have TextEncoder/TextDecoder in your environment.
 
 ## License
 

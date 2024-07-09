@@ -58,12 +58,17 @@ Page({
     ])
     const sm3Result = smCrypto.sm3(deadbeef)
     console.log(sm3Result)
-    const sm4Result = smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
-    console.log(sm4Result)
     const sign = smCrypto.sm2.doSignature(deadbeef, "00ba60c0eb75a0bfade88abe8ec0467a438078a6d82a1e9ba49a309f09ae12c6", { hash: true, der: false})
     console.log(sign)
     const verify = smCrypto.sm2.doVerifySignature(deadbeef, "046d9e13b362da45fc702f14d4d8aa5c90ae2b1815108787d4814d61f4730cae2aa080d3ba15dd10562b3c7145ea8ab2adee4b2bd848e563528841dffed560c76d", sign, { hash: true, der: false})
     console.log('verify', verify)
+
+    const sm4Result = smCrypto.sm4.encrypt(deadbeef, '0123456789abcdeffedcba9876543210', {
+       mode: 'cbc',
+       iv: 'fedcba98765432100123456789abcdef',
+       output: 'string'
+    })
+    console.log(sm4Result)
     global.smCrypto = smCrypto
   },
   data: {
@@ -80,7 +85,7 @@ Page({
     // sm2Enc-sm4Enc-sm3Hmac
     const time = Date.now()
     const sm2Enc = smCrypto.sm2.encrypt(new Uint8Array(32), this.pk, { output: 'array'})
-    const sm4Enc = smCrypto.sm4(new Uint8Array(500 * 1000), new Uint8Array(16), new Uint8Array(16))
+    const sm4Enc = smCrypto.sm4.encrypt(new Uint8Array(500 * 1000), new Uint8Array(16), new Uint8Array(16))
     const tag = smCrypto.hmac(new Uint8Array(16), concatArray([
       sm2Enc,
       sm4Enc,
