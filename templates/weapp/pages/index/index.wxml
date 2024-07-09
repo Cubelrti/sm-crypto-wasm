@@ -20,6 +20,7 @@
         <text class="userinfo-nickname">{{userInfo.nickName}}</text>
       </block>
     </view>
+    <button type="primary" bind:tap="perf">perf</button>
     <view class="usermotto">
       <text class="user-motto">{{motto}}</text>
     </view>

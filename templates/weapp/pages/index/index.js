@@ -1,6 +1,26 @@
 // index.js
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
 import smCrypto from '../../sm-crypto/index'
+
+
+function concatArray(arrays) {
+  // sum of individual array lengths
+  let totalLength = arrays.reduce((acc, value) => acc + value.length, 0);
+
+  if (!arrays.length) return null;
+
+  let result = new Uint8Array(totalLength);
+
+  // for each array - copy it over result
+  // next array is copied right after the previous one
+  let length = 0;
+  for (let array of arrays) {
+    result.set(array, length);
+    length += array.length;
+  }
+
+  return result;
+}
 Page({
   async onLoad() {
     await smCrypto.initSMCrypto()
@@ -18,6 +38,7 @@ Page({
     const kp = smCrypto.sm2.generateKeyPairHex()
     console.log(kp)
     const compressed = smCrypto.sm2.compressPublicKeyHex(kp.publicKey);
+    this.pk = kp.publicKey
     console.log(compressed)
     const sm2Cbc = smCrypto.sm2.encrypt(new Uint8Array(
       100 * 1000
@@ -32,7 +53,9 @@ Page({
       output: 'string'
     })
     console.log(sm2CbcD)
-    const sm3Result = smCrypto.sm3()
+    const sm3Result = smCrypto.sm3(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+    ]))
     console.log(sm3Result)
     const sm4Result = smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
     console.log(sm4Result)
@@ -47,6 +70,20 @@ Page({
     hasUserInfo: false,
     canIUseGetUserProfile: wx.canIUse('getUserProfile'),
     canIUseNicknameComp: wx.canIUse('input.type.nickname'),
+  },
+  perf() {
+    // sm2Enc-sm4Enc-sm3Hmac
+    const time = Date.now()
+    const sm2Enc = smCrypto.sm2.encrypt(new Uint8Array(32), this.pk, { output: 'array'})
+    const sm4Enc = smCrypto.sm4(new Uint8Array(500 * 1000), new Uint8Array(16), new Uint8Array(16))
+    const tag = smCrypto.hmac(new Uint8Array(16), concatArray([
+      sm2Enc,
+      sm4Enc,
+    ]))
+    console.log({
+      tag, sm4Enc, sm2Enc,
+      time: Date.now() - time
+    })
   },
   bindViewTap() {
     wx.navigateTo({

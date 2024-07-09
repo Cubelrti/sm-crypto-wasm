@@ -1,12 +1,13 @@
-use std::{cell::RefCell};
+use std::cell::RefCell;
 
+use crate::crypto::sm2::concvec;
+use bytemuck::cast_slice;
 use num_bigint::BigUint;
 use num_traits::Num;
 use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
-use rand_chacha::ChaCha8Rng;
-use crate::crypto::sm2::concvec;
 
 mod crypto;
 
@@ -28,19 +29,20 @@ pub fn init_rng_pool(seed: &[u8]) {
     seed_arr.copy_from_slice(seed);
     console::log_1(&hex::encode(seed_arr).into());
     RNG.with(|rng| {
-        *rng.borrow_mut() = Some(
-            ChaCha8Rng::from_seed(seed_arr)
-        );
+        *rng.borrow_mut() = Some(ChaCha8Rng::from_seed(seed_arr));
     });
 }
 
 #[wasm_bindgen]
-pub fn sm3() -> String {
+pub fn sm3(input: &[u8]) -> Vec<u8> {
     console::log_1(&JsValue::from_str("invoked sm3"));
-    let str = crypto::sm3::sm3_hash("abc".as_bytes());
-    str
-}
+    let slice_u32 = crypto::sm3::sm3_hash_u32(input);
+    // Cast the Vec<u32> to a slice of u8
+    let slice_u8: &[u8] = cast_slice(&slice_u32);
 
+    // Convert the slice into a Vec<u8> without copying
+    Vec::from(slice_u8)
+}
 
 #[derive(Serialize, Deserialize)]
 #[allow(non_snake_case)] // for JS interop and API consistency
@@ -48,7 +50,6 @@ pub struct Sm2EncryptOptions {
     pub asn1: bool,
     pub c1c2c3: bool,
 }
-
 
 #[wasm_bindgen]
 pub fn sm2_encrypt(pk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
@@ -69,7 +70,6 @@ pub fn sm2_encrypt_hex(pk: &str, data: &[u8], options: JsValue) -> String {
     hex::encode(data_enc)
 }
 
-
 #[wasm_bindgen]
 pub fn sm2_decrypt(sk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
     console::log_1(&"invoked sm2_decrypt".into());
@@ -84,9 +84,9 @@ pub fn sm2_decrypt(sk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
             let c1: &[u8] = &data[0..64];
             let c2 = &data[64..(data.len() - 32)];
             let c3 = &data[(data.len() - 32)..];
-            let cipher_c1c3c2 = concvec!(c1, c3, c2);   
+            let cipher_c1c3c2 = concvec!(c1, c3, c2);
             dec_ctx.decrypt_asna1(&cipher_c1c3c2)
-        },
+        }
     };
     data_dec
 }
@@ -134,10 +134,16 @@ pub fn compress_public_key_hex(s: &str) -> Result<String, JsError> {
 }
 
 #[wasm_bindgen]
-pub fn sm4_encrypt(input: String, key: &[u8], iv: &[u8]) -> String {
+pub fn sm3_hmac(key: &[u8], msg: &[u8]) -> Vec<u8> {
+    console::log_1(&JsValue::from_str("invoked sm3_hmac"));
+    crypto::sm3::sm3_hmac(key, msg)
+}
+
+#[wasm_bindgen]
+pub fn sm4_encrypt(input: &[u8], key: &[u8], iv: &[u8]) -> Vec<u8> {
     console::log_1(&JsValue::from_str("invoked sm4_encrypt"));
-    let data = crypto::sm4::CryptSM4CBC::new(key, iv).encrypt_cbc(input.as_bytes());
-    hex::encode(data)
+    let data = crypto::sm4::CryptSM4CBC::new(key, iv).encrypt_cbc(input);
+    data
 }
 
 // This is like the `main` function, except for JavaScript.

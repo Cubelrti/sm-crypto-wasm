@@ -24,6 +24,7 @@ declare const _default: {
         initRNGPool: typeof init_rng_pool;
     };
     sm3: typeof sm3;
+    hmac: typeof sm3_hmac;
     sm4: typeof sm4_encrypt;
 };
 export default _default;
@@ -38,13 +39,14 @@ declare type InitInput = RequestInfo | URL | Response | BufferSource | WebAssemb
 declare interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly init_rng_pool: (a: number, b: number) => void;
-    readonly sm3: (a: number) => void;
+    readonly sm3: (a: number, b: number, c: number) => void;
     readonly sm2_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_encrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_decrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_generate_keypair: () => number;
     readonly compress_public_key_hex: (a: number, b: number, c: number) => void;
+    readonly sm3_hmac: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
     readonly main_js: () => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
@@ -71,16 +73,24 @@ declare interface SM2Options {
 }
 
 /**
- * @returns {string}
+ * @param {Uint8Array} input
+ * @returns {Uint8Array}
  */
-declare function sm3(): string;
+declare function sm3(input: Uint8Array): Uint8Array;
 
 /**
- * @param {string} input
+ * @param {Uint8Array} key
+ * @param {Uint8Array} msg
+ * @returns {Uint8Array}
+ */
+declare function sm3_hmac(key: Uint8Array, msg: Uint8Array): Uint8Array;
+
+/**
+ * @param {Uint8Array} input
  * @param {Uint8Array} key
  * @param {Uint8Array} iv
- * @returns {string}
+ * @returns {Uint8Array}
  */
-declare function sm4_encrypt(input: string, key: Uint8Array, iv: Uint8Array): string;
+declare function sm4_encrypt(input: Uint8Array, key: Uint8Array, iv: Uint8Array): Uint8Array;
 
 export { }

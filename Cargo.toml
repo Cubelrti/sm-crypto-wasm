@@ -40,6 +40,7 @@ gloo-utils = { version = "0.2.0", features = ["serde"] }
 rand = "0.8.5"
 rand_core = "0.6"
 rand_chacha = "0.3.1"
+bytemuck = "1.9.1"
 base64 = "*"
 bytes = "1.1.0"
 num-traits = "0.2.14"
