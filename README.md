@@ -60,7 +60,9 @@ Internally we use `ChaCha8` for random number generation, which is secure enough
 
 ## Performance
 
-Compared to non-WebAssembly version of `sm-crypto-v2`, this library is slower in some cases, but it is still acceptable for most cases. The performance is still under development, and we will try to optimize it in the future.
+Compared to the most optimized version of `sm-crypto-v2`, this project is about 2x faster under some circumstances. The performance may vary on different platforms and devices.
+
+If you are running in some platform that don't have native BigInt support, this project provides 50x-100x faster performance than `sm-crypto-v2` using polyfill of BigInt like `biginteger.js` or `jsbn`.
 
 ## Background
 

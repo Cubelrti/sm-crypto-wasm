@@ -1,19 +1,55 @@
 import smCrypto from '../../sm-crypto';
+function toHex(array) {
+  return Array.prototype.map.call(array, x => ('00' + x.toString(16)).slice(-2)).join('');
+}
 Page({
   async onLoad(query) {
     // 页面加载
     console.info(`Page onLoad with query: ${JSON.stringify(query)}`);
+    await smCrypto.initSMCrypto()
 
- },
- async tap() {
-  await smCrypto.initSMCrypto()
-  const sm2Result = await smCrypto.sm2()
-  console.log(sm2Result)
-  const sm3Result = await smCrypto.sm3()
-  console.log(sm3Result)
-  const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
-  console.log(sm4Result)
- },
+    const kp = await smCrypto.sm2.generateKeyPairHex()
+    console.log(kp.publicKey, kp.privateKey)
+    const compressed = await smCrypto.sm2.compressPublicKeyHex(kp.publicKey);
+    this.pk = kp.publicKey
+    console.log(compressed)
+    const sm2Cbc = await smCrypto.sm2.encrypt(new Uint8Array(
+      100
+    ), kp.publicKey, {
+      output: 'array'
+    })
+    console.log(toHex(sm2Cbc))
+    const sm2Cbc2 = await smCrypto.sm2.encrypt(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+    ]), compressed, {
+      output: 'array'
+    })
+
+    console.log(toHex(sm2Cbc2))
+
+    // decrypt
+    const sm2CbcD = await smCrypto.sm2.decrypt(sm2Cbc2, kp.privateKey, {
+      output: 'string'
+    })
+    console.log(sm2CbcD)
+
+    const sm3Result = await smCrypto.sm3(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+    ]))
+    console.log(toHex(sm3Result))
+    const sm4Result = await smCrypto.sm4(new Uint8Array(16), new Uint8Array(16), new Uint8Array(16))
+    console.log(toHex(sm4Result))
+
+  },
+  async tap() {
+    await smCrypto.initSMCrypto()
+    const sm2Result = await smCrypto.sm2()
+    console.log(sm2Result)
+    const sm3Result = await smCrypto.sm3()
+    console.log(sm3Result)
+    const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
+    console.log(sm4Result)
+  },
   onReady() {
     // 页面加载完成
   },

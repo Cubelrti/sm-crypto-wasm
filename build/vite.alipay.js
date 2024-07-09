@@ -11,7 +11,8 @@ export default defineConfig({
     PLATFORM: 'my',
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
     WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
-    __CONVERT_ARRAYBUFFER__: true,
+    __CONVERT_ARRAYBUFFER__: false,
+    __CONVERT_ARRAY__: true,
   },
 
   build: {
@@ -38,7 +39,7 @@ export default defineConfig({
   plugins: [
     viteStaticCopy({
       targets: [
-        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', 'templates/alipay/sm-crypto/'), rename: 'crypto.wasm' },
+        { src: 'js/pkg/index_bg.wasm', dest: path.join(__dirname, '..', 'templates/alipay/sm-crypto/'), rename: 'crypto.wasm' },
       ],
     }),
     wasmPackPlugin({
@@ -49,6 +50,10 @@ export default defineConfig({
     }),
     dts({
       copyDtsFiles: true,
+      rollupTypes: true,
+      rollupOptions: {
+        showVerboseMessages: true,
+      },
     }),
   ]
 });
