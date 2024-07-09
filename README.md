@@ -106,6 +106,8 @@ Alternatively, you can see the code snippet for several DevTools:
 
 ## API
 
+> If you are using Worker mode, all APIs are async and return Promise.
+
 ### SM2 Public Key Cryptography
 
 #### Key Generations
