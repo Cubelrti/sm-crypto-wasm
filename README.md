@@ -48,13 +48,13 @@ await new Promise(rs => {
 sm2.generateKeyPairHex() // no warning anymore
 ```
 
-For other platforms, you may need to provide your own secure random number generation, like get random number from server, or avoid using the following algorithms is not deterministic:
+For other platforms, you may need to provide your own secure random number generation, like get random number from server, or completely avoid using the following algorithms is not deterministic:
 
 - SM2 Key Pair Generation
 - SM2 Signature
 - SM2 Encryption
 
-It is strongly recommended to use secure random number generation for security. We provide a shim for `getRandomValues` for unsupported platforms using `Math.random()` to prevent panicking, but it is not secure enough for any production use. A warning will be printed if you don't securely seed the random number generator.
+It is **strongly recommended** to use secure random number generation for security. We provide a shim for `getRandomValues` for unsupported platforms using `Math.random()` to prevent panicking by default, but it is not secure enough for any production use. A warning will be printed if you don't securely seed the random number generator.
 
 Internally we use `ChaCha8` for random number generation, which is secure enough for most cases. But for security, the seed should be generated from a secure source and contain enough entropy.
 
@@ -133,6 +133,43 @@ let ciphertext = sm2.encrypt(new Uint8Array([
       0xde, 0xad, 0xbe, 0xef
 ]), compressed, { output: 'array', asn1: true, cipherMode: 1}) // => Uint8Array
 ```
+
+#### Signature and Verification
+```typescript
+// signing, using private key and return hex encoded string
+let signature = sm2.doSignature(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+]), keypair.privateKey, { der: true, hash: true }) // => string
+
+// verifying, using public key and return boolean
+let verified = sm2.doVerifySignature(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+]), signature, keypair.publicKey, { der: true, hash: true }) // => boolean
+```
+
+### SM3 Hash Function
+
+```typescript
+// hashing, return hex encoded string
+let hash = sm3(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+])) // => string
+```
+
+### SM4 Block Cipher
+
+```typescript
+// encrypting, return hex encoded string
+let ciphertext = sm4.encrypt(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+]), key, { output: 'string' }) // => string
+
+// decrypting, return hex encoded string
+let plaintext = sm4.decrypt(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+]), key, { output: 'string' }) // => string
+```
+
 
 ## License
 

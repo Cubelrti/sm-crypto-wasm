@@ -28,7 +28,7 @@ function initSMCrypto() {
           resolve()
         }
         if (id === -1 && event === 'log') {
-          console.warn(message)
+          console.log(message)
         }
       })
       worker.onProcessKilled?.((err) => {
@@ -89,7 +89,7 @@ function wrapMethod<M extends keyof Mod>(
     worker.onMessage((data) => {
       let { id: responseId, event, message, result, type } = data
       if (responseId === -1 && event === 'log') {
-        console.warn(message)
+        console.log(message)
       }
       if (responseId === id) {
         clearTimeout(timeout)

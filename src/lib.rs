@@ -1,9 +1,9 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, option};
 
 use crate::crypto::sm2::concvec;
 use bytemuck::cast_slice;
 use num_bigint::BigUint;
-use num_traits::Num;
+use num_traits::{sign, Num};
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use wasm_bindgen::prelude::*;
@@ -92,10 +92,54 @@ pub fn sm2_decrypt(sk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
 
 #[wasm_bindgen]
 pub fn sm2_decrypt_hex(sk: &str, data: &[u8], options: JsValue) -> String {
-    console::log_1(&"invoked sm2_decrypt".into());
+    console::log_1(&"invoked sm2_decrypt_hex".into());
     let data_dec = sm2_decrypt(sk, data, options);
     hex::encode(data_dec)
 }
+
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)] // for JS interop and API consistency
+pub struct Sm2SignatureOptions {
+    pub hash: bool,
+    pub userId: Option<String>,
+    pub der: bool,
+}
+
+#[wasm_bindgen]
+pub fn sm2_sign(sk: &str, msg: &[u8], options: JsValue) -> String {
+    console::log_1(&JsValue::from_str("invoked sm2_sign"));
+    let options: Sm2SignatureOptions = serde_wasm_bindgen::from_value(options).unwrap();
+
+    let id = (&options.userId).clone().unwrap_or_default();
+    let sign_ctx = match options.userId {
+        Some(_) => crypto::sm2::Sign::new_with_id(id.as_bytes(), sk),
+        None => crypto::sm2::Sign::new(sk),
+    };
+
+    let sign = match options.hash {
+        true => sign_ctx.sign(msg, options.der),
+        false => sign_ctx.sign_raw(msg, options.der),
+    };
+    hex::encode(sign)
+}
+
+#[wasm_bindgen]
+pub fn sm2_verify(pk: &str, msg: &[u8], sign: &str, options: JsValue) -> bool {
+    console::log_1(&JsValue::from_str("invoked sm2_verify"));
+    let options: Sm2SignatureOptions = serde_wasm_bindgen::from_value(options).unwrap();
+    console::log_1(&options.hash.into());
+
+    let id = (&options.userId).clone().unwrap_or_default();
+    let verify_ctx = match options.userId {
+        Some(_) => crypto::sm2::Verify::new_with_id(id.as_bytes(), pk),
+        None => crypto::sm2::Verify::new(pk),
+    };
+    match options.hash {
+        true => verify_ctx.verify(msg, &hex::decode(sign).unwrap(), options.der),
+        false => verify_ctx.verify_raw(msg, &hex::decode(sign).unwrap(), options.der),
+    }
+}
+
 
 use serde::{Deserialize, Serialize};
 

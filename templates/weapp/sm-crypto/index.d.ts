@@ -19,8 +19,10 @@ declare const _default: {
     sm2: {
         generateKeyPairHex: typeof sm2_generate_keypair;
         compressPublicKeyHex: typeof compress_public_key_hex;
-        encrypt(msg: Uint8Array, publicKey: string, options: SM2Options): string | Uint8Array;
-        decrypt(msg: Uint8Array, privateKey: string, options: SM2Options): string | Uint8Array;
+        encrypt(msg: Uint8Array | string, publicKey: string, options: SM2EncryptionOptions): string | Uint8Array;
+        decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions): string | Uint8Array;
+        doSignature(msg: Uint8Array | string, privateKey: string, options: SM2SignatureOptions): string;
+        doVerifySignature(msg: Uint8Array | string, publicKey: string, signature: string, options: SM2SignatureOptions): boolean;
         initRNGPool: typeof init_rng_pool;
     };
     sm3: typeof sm3;
@@ -44,6 +46,8 @@ declare interface InitOutput {
     readonly sm2_encrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_decrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly sm2_sign: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+    readonly sm2_verify: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
     readonly sm2_generate_keypair: () => number;
     readonly compress_public_key_hex: (a: number, b: number, c: number) => void;
     readonly sm3_hmac: (a: number, b: number, c: number, d: number, e: number) => void;
@@ -66,10 +70,16 @@ export declare type Mod = typeof __wbg_init;
  */
 declare function sm2_generate_keypair(): any;
 
-declare interface SM2Options {
-    cipherMode: 1 | 0;
-    asn1: boolean;
-    output: 'array' | 'string';
+declare interface SM2EncryptionOptions {
+    cipherMode?: 1 | 0;
+    asn1?: boolean;
+    output?: 'array' | 'string';
+}
+
+declare interface SM2SignatureOptions {
+    hash?: boolean;
+    der?: boolean;
+    userId?: string;
 }
 
 /**

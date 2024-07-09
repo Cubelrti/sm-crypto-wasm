@@ -121,15 +121,15 @@ export default function webAssemblyPlugin(options) {
           //   return addHeapObject(ret);
           // };
 
-          if (n.type === 'ExpressionStatement' && n.expression.type === 'AssignmentExpression'
-            && n.expression.left.property?.name?.startsWith('__wb')
-            && n.expression.right.type === 'FunctionExpression'
-            && !n.$$hasConsoleLog
-          ) {
-            n.$$hasConsoleLog = true;
-            const code = `console.log('calling ${n.expression.left.property.name}');`;
-            n.expression.right.body.body.unshift(parseModule(code).$ast.body[0]);
-          }
+          // if (n.type === 'ExpressionStatement' && n.expression.type === 'AssignmentExpression'
+          //   && n.expression.left.property?.name?.startsWith('__wb')
+          //   && n.expression.right.type === 'FunctionExpression'
+          //   && !n.$$hasConsoleLog
+          // ) {
+          //   n.$$hasConsoleLog = true;
+          //   const code = `console.log('calling ${n.expression.left.property.name}');`;
+          //   n.expression.right.body.body.unshift(parseModule(code).$ast.body[0]);
+          // }
 
           // Recursively traverse nested nodes
           for (const key in n) {

@@ -47,6 +47,7 @@ export default defineConfig({
 
     }),
     wasmPackPlugin({
+      // wechat miniprogram does not support dev, so we use release
       extraArgs: '--target web --release'
     }),
     webassemblyPlugin({

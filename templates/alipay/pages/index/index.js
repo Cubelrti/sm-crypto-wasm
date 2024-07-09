@@ -3,9 +3,9 @@ function toHex(array) {
   return Array.prototype.map.call(array, x => ('00' + x.toString(16)).slice(-2)).join('');
 }
 Page({
-  async onLoad(query) {
+  async tap() {
     // 页面加载
-    console.info(`Page onLoad with query: ${JSON.stringify(query)}`);
+    console.info(`tap`);
     await smCrypto.initSMCrypto()
 
     const kp = await smCrypto.sm2.generateKeyPairHex()
@@ -40,15 +40,6 @@ Page({
     const sm4Result = await smCrypto.sm4(new Uint8Array(16), new Uint8Array(16), new Uint8Array(16))
     console.log(toHex(sm4Result))
 
-  },
-  async tap() {
-    await smCrypto.initSMCrypto()
-    const sm2Result = await smCrypto.sm2()
-    console.log(sm2Result)
-    const sm3Result = await smCrypto.sm3()
-    console.log(sm3Result)
-    const sm4Result = await smCrypto.sm4('123', new Uint8Array(16), new Uint8Array(16))
-    console.log(sm4Result)
   },
   onReady() {
     // 页面加载完成
