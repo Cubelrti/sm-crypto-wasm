@@ -27,7 +27,6 @@ thread_local! {
 pub fn init_rng_pool(seed: &[u8]) {
     let mut seed_arr = [0u8; 32];
     seed_arr.copy_from_slice(seed);
-    console::log_1(&hex::encode(seed_arr).into());
     RNG.with(|rng| {
         *rng.borrow_mut() = Some(ChaCha8Rng::from_seed(seed_arr));
     });
