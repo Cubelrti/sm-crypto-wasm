@@ -77,8 +77,9 @@ Platform Support Matrix:
 | Android(Worker) | ✅ (8.0.49) | ✅ (30.5.0) | ✅ (10.6.10) |
 | Android(Native) | ✅ (8.0.49) | ✅ (30.5.0) | ❌           |
 
-Note:
+Notes:
 - Alipay only support WebAssembly inside Worker.
+- Alipay worker message has very bad serialization support, only flat object with array/string/number are supported. Nested array of object will be dropped or converted into string unexpectedly.
 - WeChat need manual removal of `instantiateStreaming` for Worker on Android.
 - Douyin need custom shim for Crypto API and TextEncoder/TextDecoder.
 - WeChat need custom shim for TextEncoder/TextDecoder for Native WebAssembly.

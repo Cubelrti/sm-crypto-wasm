@@ -9,12 +9,13 @@ let PREFER_WORKER = false;
 
 const ROOT = 'templates/tt/sm-crypto/'
 // https://vitejs.dev/config/
+
 export default defineConfig({
   define: {
     PLATFORM: 'tt',
     __CONVERT_ARRAYBUFFER__: true,
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
-    WASM_BINARY_PATH: `'/sm-crypto/crypto.wasm'`,
+    WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
   },
   build: {
     lib: {
@@ -27,13 +28,13 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: `js/index.${PREFER_WORKER ? 'worker' : 'native'}.ts`,
-        'workers/sm-crypto': 'js/worker-index.js',
+        // if you use worker, you need to uncomment the following line:
+        // 'workers/sm-crypto': 'js/worker-index.js',
       },
       output: {
         format: 'cjs',
         dir: ROOT,
         entryFileNames: '[name].js',
-        chunkFileNames: 'chunks/[name]-[hash].js',
         inlineDynamicImports: false,
       }
     },
@@ -41,18 +42,22 @@ export default defineConfig({
   plugins: [
     viteStaticCopy({
       targets: [
-        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', ROOT), rename: 'crypto.wasm' },
+        { src: 'js/pkg/index_bg.wasm', dest: path.join(__dirname, '..', ROOT), rename: 'crypto.wasm' },
       ],
 
     }),
     wasmPackPlugin({
-      extraArgs: '--target web --release',
+      extraArgs: '--target web --release'
     }),
     webassemblyPlugin({
       name: 'TTWebAssembly',
     }),
     dts({
       copyDtsFiles: true,
+      rollupTypes: true,
+      rollupOptions: {
+        showVerboseMessages: true,
+      },
     }),
   ]
 });
