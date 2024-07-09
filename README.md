@@ -11,7 +11,7 @@ Disclaimer: This project is still under development, and the API may change in t
 ## Features
 
 - Decent Performance for Encryption and Decryption by WebAssembly
-- SM2/SM3/SM4 Algorithms and Key Exchange Protocols (will support soon)
+- SM2/SM3/SM4 Algorithms and Key Exchange Protocols (not yet implemented)
 - Similar API to `sm-crypto` and `sm-crypto-v2` for development convenience
 
 ## Supported Runtime
@@ -134,6 +134,15 @@ let ciphertext = sm2.encrypt(new Uint8Array([
 let ciphertext = sm2.encrypt(new Uint8Array([
       0xde, 0xad, 0xbe, 0xef
 ]), compressed, { output: 'array', asn1: true, cipherMode: 1}) // => Uint8Array
+
+// sm4-gcm (experimental), only support bytes input and output
+const gcm = smCrypto.sm4.gcm(
+  deadbeef, 
+  hexToBytes("0123456789ABCDEFFEDCBA9876543210"),
+  hexToBytes("00001234567800000000ABCD"),
+  hexToBytes("FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2")
+)
+
 ```
 
 #### Signature and Verification

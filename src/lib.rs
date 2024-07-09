@@ -6,6 +6,7 @@ use num_bigint::BigUint;
 use num_traits::{sign, Num};
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
+use serde_json::json;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -204,9 +205,20 @@ pub fn sm4_encrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
             crypto::sm4::CryptSM4CBC::new(key, iv).encrypt_cbc(input, options.padding == "pkcs7")
         },
         "ecb" => crypto::sm4::CryptSM4ECB::new(key).encrypt_ecb(input, options.padding == "pkcs7"),
-        _ => panic!("mode {} not supported", options.mode),
+        "ctr" => {
+            let iv = options.iv.as_ref().map(|v| v.as_slice()).unwrap();
+            crypto::sm4::encrypt_ctr(input, key, iv, options.padding == "pkcs7")
+        }
+        _ => panic!("mode {} not supported. for gcm, use sm4_encrypt_gcm instead", options.mode),
     };
     data
+}
+
+#[wasm_bindgen]
+pub fn sm4_encrypt_gcm(input: &[u8], key: &[u8], iv: &[u8], aad: &[u8]) -> Vec<u8> {
+    console::log_1(&JsValue::from_str("invoked sm4_encrypt_gcm"));
+    let (data, tag) = crypto::sm4::encrypt_gcm(input, key, iv, aad);
+    concvec!(&data, &tag)
 }
 
 #[wasm_bindgen]

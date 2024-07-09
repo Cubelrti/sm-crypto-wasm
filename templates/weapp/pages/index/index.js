@@ -2,7 +2,16 @@
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
 import smCrypto from '../../sm-crypto/index'
 
-
+function hexToBytes(str) {
+  const bytes = []
+  for (let i = 0; i < str.length; i += 2) {
+    bytes.push(parseInt(str.substr(i, 2), 16))
+  }
+  return new Uint8Array(bytes)
+}
+function bytesToHex(bytes) {
+  return Array.prototype.map.call(bytes, x => ('00' + x.toString(16)).slice(-2)).join('')
+}
 function concatArray(arrays) {
   // sum of individual array lengths
   let totalLength = arrays.reduce((acc, value) => acc + value.length, 0);
@@ -63,12 +72,19 @@ Page({
     const verify = smCrypto.sm2.doVerifySignature(deadbeef, "046d9e13b362da45fc702f14d4d8aa5c90ae2b1815108787d4814d61f4730cae2aa080d3ba15dd10562b3c7145ea8ab2adee4b2bd848e563528841dffed560c76d", sign, { hash: true, der: false})
     console.log('verify', verify)
 
-    const sm4Result = smCrypto.sm4.encrypt(deadbeef, '0123456789abcdeffedcba9876543210', {
+    const sm4Result = smCrypto.sm4.encrypt(deadbeef, '0123456789ABCDEFFEDCBA9876543210', {
        mode: 'cbc',
        iv: 'fedcba98765432100123456789abcdef',
        output: 'string'
     })
     console.log(sm4Result)
+    const gcm = smCrypto.sm4.gcm(
+      deadbeef, 
+      hexToBytes("0123456789ABCDEFFEDCBA9876543210"),
+      hexToBytes("00001234567800000000ABCD"),
+      hexToBytes("FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2")
+    )
+    console.log(bytesToHex(gcm))
     global.smCrypto = smCrypto
   },
   data: {

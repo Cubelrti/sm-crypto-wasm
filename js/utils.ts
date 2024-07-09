@@ -5,3 +5,7 @@ export function hexToBytes(str: string) {
   }
   return new Uint8Array(bytes)
 }
+
+export function bytesToHex(bytes: Uint8Array) {
+  return Array.prototype.map.call(bytes, x => ('00' + x.toString(16)).slice(-2)).join('')
+}

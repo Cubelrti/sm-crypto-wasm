@@ -16,7 +16,7 @@ export interface SM2KeyPair {
 }
 
 export interface SM4EncryptionOptions {
-  mode?: 'cbc' | 'ecb'
+  mode?: 'cbc' | 'ecb' | 'ctr' | 'gcm'
   padding?: 'pkcs7' | 'none'
   iv?: string | Uint8Array
   output?: 'array' | 'string'
