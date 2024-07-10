@@ -1,5 +1,5 @@
 import { SM2EncryptionOptions, SM2SignatureOptions, SM4EncryptionOptions } from './common'
-import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_decrypt_hex, sm2_encrypt, sm2_encrypt_hex, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_decrypt_gcm, sm4_encrypt, sm4_encrypt_gcm, sm4_encrypt_hex } from './pkg'
+import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_decrypt_hex, sm2_encrypt, sm2_encrypt_hex, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_decrypt_gcm, sm4_encrypt, sm4_encrypt_gcm, sm4_encrypt_hex, xsm4_decrypt, xsm4_encrypt } from './pkg'
 import { hexToBytes } from './utils'
 export type Mod = typeof mod
 type ArgsType<T> = T extends (...args: infer U) => any ? U : never
@@ -126,6 +126,8 @@ export default {
     gcm: {
       encrypt: sm4_encrypt_gcm,
       decrypt: sm4_decrypt_gcm,
+      xsm4_encrypt,
+      xsm4_decrypt,
     },
   },
 }

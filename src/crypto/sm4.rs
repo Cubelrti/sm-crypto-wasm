@@ -1,18 +1,12 @@
-use std::{
-    convert::{TryFrom, TryInto},
-    io::Read,
-};
-
 use ghash::universal_hash::UniversalHash;
 use ghash::{
     universal_hash::{
         array::Array,
-        consts::{U0, U16},
+        consts::{U16},
         KeyInit,
     },
     GHash,
 };
-use web_sys::console;
 const SM4_BOXES_TABLE: [u8; 256] = [
     0xd6, 0x90, 0xe9, 0xfe, 0xcc, 0xe1, 0x3d, 0xb7, 0x16, 0xb6, 0x14, 0xc2, 0x28, 0xfb, 0x2c, 0x05,
     0x2b, 0x67, 0x9a, 0x76, 0x2a, 0xbe, 0x04, 0xc3, 0xaa, 0x44, 0x13, 0x26, 0x49, 0x86, 0x06, 0x99,
@@ -363,7 +357,7 @@ fn decrypt_ecb(input_data: &[u8], key: &[u8], pkcs7: bool) -> Vec<u8> {
     }
 }
 
-fn encrypt_cbc(input_data: &[u8], key: &[u8], iv: &[u8], pkcs7: bool) -> Vec<u8> {
+pub fn encrypt_cbc(input_data: &[u8], key: &[u8], iv: &[u8], pkcs7: bool) -> Vec<u8> {
     let sk = set_key(key, Mode::Sm4Encrypt);
     let mut i = 0;
     let mut output_data: Vec<u8> = vec![];
@@ -385,7 +379,7 @@ fn encrypt_cbc(input_data: &[u8], key: &[u8], iv: &[u8], pkcs7: bool) -> Vec<u8>
     output_data
 }
 
-fn decrypt_cbc(input_data: &[u8], key: &[u8], iv: &[u8], pkcs7: bool) -> Vec<u8> {
+pub fn decrypt_cbc(input_data: &[u8], key: &[u8], iv: &[u8], pkcs7: bool) -> Vec<u8> {
     let sk = set_key(key, Mode::Sm4Decrypt);
     let mut i = 0;
     let mut output_data: Vec<u8> = vec![];

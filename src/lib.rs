@@ -235,6 +235,7 @@ pub fn sm4_encrypt_hex(input: &[u8], key: &[u8], options: JsValue) -> String {
     hex::encode(data)
 }
 
+
 #[wasm_bindgen]
 pub fn sm4_decrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
     console::log_1(&JsValue::from_str("invoked sm4_decrypt"));
