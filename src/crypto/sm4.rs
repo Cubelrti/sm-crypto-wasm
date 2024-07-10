@@ -180,19 +180,23 @@ pub fn encrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8]) -> (
 
     let mut ghash: GHash = GHash::new(&ghash_key);
 
+
     // Generate initial counter block (J0)
-    let mut j0 = vec![0u8; 16];
-    if nonce.len() == 12 {
-        j0[..12].copy_from_slice(nonce);
-        j0[15] = 0x01;
+    let j0 = if nonce.len() == 12 {
+        let mut block = ghash::Block::default();
+        block[..12].copy_from_slice(nonce);
+        block[15] = 1;
+        block
     } else {
+        let mut ghash = ghash.clone();
         ghash.update_padded(nonce);
 
         let mut block = ghash::Block::default();
-        let nonce_bits = 32u64 * 8;
+        let nonce_bits = (nonce.len() as u64) * 8;
         block[8..].copy_from_slice(&nonce_bits.to_be_bytes());
         ghash.update(&[block]);
-    }
+        ghash.finalize()
+    };
     let mut ciphertext = vec![0u8; input_data.len()];
     let block_size = 16;
     let mut counter_block = j0.clone();
@@ -213,7 +217,7 @@ pub fn encrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8]) -> (
         let block_offset = i * block_size;
 
         // Encrypt the counter block to produce the keystream block
-        let keystream_block = one_round(sk.to_owned(), counter_block.to_owned());
+        let keystream_block = one_round(sk.to_owned(), counter_block.to_vec());
 
         // XOR the plaintext with the keystream block to produce the ciphertext
         for j in 0..chunk.len() {
@@ -251,18 +255,21 @@ pub fn decrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8], tag:
     let mut ghash: GHash = GHash::new(&ghash_key);
 
     // Generate initial counter block (J0)
-    let mut j0 = vec![0u8; 16];
-    if nonce.len() == 12 {
-        j0[..12].copy_from_slice(nonce);
-        j0[15] = 0x01;
+    let j0 = if nonce.len() == 12 {
+        let mut block = ghash::Block::default();
+        block[..12].copy_from_slice(nonce);
+        block[15] = 1;
+        block
     } else {
+        let mut ghash = ghash.clone();
         ghash.update_padded(nonce);
 
         let mut block = ghash::Block::default();
-        let nonce_bits = nonce.len() * 8;
+        let nonce_bits = (nonce.len() as u64) * 8;
         block[8..].copy_from_slice(&nonce_bits.to_be_bytes());
         ghash.update(&[block]);
-    }
+        ghash.finalize()
+    };
     let mut plaintext = vec![0u8; input_data.len()];
     let block_size = 16;
     let mut counter_block = j0.clone();
@@ -285,7 +292,7 @@ pub fn decrypt_gcm(input_data: &[u8], key: &[u8], nonce: &[u8], aad: &[u8], tag:
         let block_offset = i * block_size;
 
         // Encrypt the counter block to produce the keystream block
-        let keystream_block = one_round(sk.to_owned(), counter_block.to_owned());
+        let keystream_block = one_round(sk.to_owned(), counter_block.to_vec());
 
         // XOR the plaintext with the keystream block to produce the ciphertext
         for j in 0..chunk.len() {

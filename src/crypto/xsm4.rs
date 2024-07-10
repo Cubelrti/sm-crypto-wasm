@@ -5,10 +5,14 @@ use super::sm4;
 
 pub fn derive_key_nonce(key: &[u8], nonce: &[u8]) -> (Vec<u8>, Vec<u8>) {
     let mut k = sm4::encrypt_cbc(&vec![0u8; 16], key, &vec![0u8; 16], false);
-    for i in (0..k.len()).rev() {
-        let msb = (k[i] >> 7) & 0xff;
-        k[i] = ((k[i] << 1) | msb) & 0xff;
+    let mut msb = 0u8;
+    let klen = k.len();
+    for i in (0..klen).rev() {
+        msb = k[i] >> 7;
+        k[i] = (k[i] << 1) | msb;
     }
+    k[klen - 1] ^= msb * 0b10000111;
+
     let mut m: Vec<u8> = vec![0u8; 16];
     m[1] = 0x04; // 0x04 indicates SM4
     m[2] = 0x58; // 'X'

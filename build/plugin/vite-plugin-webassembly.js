@@ -9,6 +9,8 @@ export default function webAssemblyPlugin(options) {
       if (!id.endsWith('pkg/index.js')) {
         return;
       }
+      console.log('[webassembly-transform-plugin] start', id)
+
       const mod = parseModule(code);
       // add TextEncoder and TextDecoder shim
       // TT iOS and Alipay Android need shim inside Worker, global polyfill is not working
@@ -75,10 +77,9 @@ export default function webAssemblyPlugin(options) {
                 return n.block.body.some(n => n.type === 'ReturnStatement');
               }
             });
-            console.log(n.declaration.body.body.length)
             const code2 = `console.log('${n.declaration?.id.name} took', Date.now() - timer, 'ms');`;
             if (returnStatement) {
-              console.log('???', n.declaration?.id.name)
+              console.log('adding timer function to', n.declaration?.id.name)
               // insert before the return statement
               // find the index of the return statement
               // in a try block, insert before the return statement
@@ -143,6 +144,8 @@ export default function webAssemblyPlugin(options) {
         };
         traverseNode(node);
       });
+      console.log('[webassembly-transform-plugin] done ✔')
+
       return generateCode(mod);
     }
   };

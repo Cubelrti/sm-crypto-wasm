@@ -44,25 +44,40 @@ Page({
         }
       })
     })
-    let key = hexToBytes("01010101010101010101010101010101")
+    let key1 = hexToBytes("02020202020202020202020202020202")
+    let key2 = hexToBytes("03030303030303030303030303030303")
     let nonce = new Uint8Array([65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88]) // 24 * 8 = 192
     let data = new Uint8Array([
       88, 83, 77, 52, 45, 71, 67, 77
     ]) // XSM4-GCM
     let cipher = smCrypto.sm4.gcm.xsm4_encrypt(
-      key,
+      key1,
       nonce,
       data,
       new Uint8Array(0)
     )
     console.log(cipher)
     let plaintext = smCrypto.sm4.gcm.xsm4_decrypt(
-      key,
+      key1,
       nonce,
       cipher,
       new Uint8Array(0),
     )
     console.log(plaintext)
+    let ct = smCrypto.sm4.gcm.encrypt(
+      hexToBytes('DEADBEEF'),
+      hexToBytes('0123456789ABCDEFFEDCBA9876543210'),
+      hexToBytes('00001234567800000000ABCD0000'),
+      hexToBytes('FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2'),
+    )
+    console.log(bytesToHex(ct));
+    let pt = smCrypto.sm4.gcm.decrypt(
+      ct,
+      hexToBytes('0123456789ABCDEFFEDCBA9876543210'),
+      hexToBytes('00001234567800000000ABCD0000'),
+      hexToBytes('FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2'),
+    )
+    console.log(bytesToHex(pt))
     return
     const kp = smCrypto.sm2.generateKeyPairHex()
     console.log(kp)
