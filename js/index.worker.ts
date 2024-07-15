@@ -1,9 +1,10 @@
+import { SM2EncryptionOptions, SM2SignatureOptions, SM4EncryptionOptions } from './common'
 import type * as mod from './pkg/index'
+import { hexToBytes } from './utils'
 type Mod = typeof mod
 type ArgsType<T> = T extends (...args: infer U) => any ? U : never
 
 let worker: any = null
-let wasmInstance: any = null
 declare const PLATFORM: {
   createWorker: (
     scriptPath: string,
@@ -51,9 +52,6 @@ function wrapMethod<M extends keyof Mod>(
   return (...args: ArgsType<Mod[M]>) => new Promise<ReturnType<Mod[M]>>((resolve, reject) => {
     const id = callbackId++
     const startTime = Date.now()
-    // if (wasmInstance) {
-    //   resolve(mod[method].call(wasmInstance, ...args))
-    // }
 
     // create message layout
     // since alipay has very poor support on Workers
@@ -110,62 +108,142 @@ function wrapMethod<M extends keyof Mod>(
 
   })
 }
+// wrap all methods in mod
+const sm2_generate_keypair = wrapMethod('sm2_generate_keypair')
+const compress_public_key_hex = wrapMethod('compress_public_key_hex')
+const sm2_encrypt = wrapMethod('sm2_encrypt')
+const sm2_encrypt_hex = wrapMethod('sm2_encrypt_hex')
+const sm2_decrypt = wrapMethod('sm2_decrypt')
+const sm2_decrypt_hex = wrapMethod('sm2_decrypt_hex')
+const sm2_sign = wrapMethod('sm2_sign')
+const sm2_verify = wrapMethod('sm2_verify')
+const init_rng_pool = wrapMethod('init_rng_pool')
+const sm3 = wrapMethod('sm3')
+const sm3_hmac = wrapMethod('sm3_hmac')
+const sm4_encrypt = wrapMethod('sm4_encrypt')
+const sm4_encrypt_hex = wrapMethod('sm4_encrypt_hex')
+const sm4_decrypt = wrapMethod('sm4_decrypt')
+const sm4_encrypt_gcm = wrapMethod('sm4_encrypt_gcm')
+const sm4_decrypt_gcm = wrapMethod('sm4_decrypt_gcm')
+
 interface SM2Options {
   cipherMode: 1 | 0
   asn1: boolean
   output: 'array' | 'string'
 }
 export default {
-  // initSMCrypto,
-  // sm2: {
-  //   encrypt: wrapMethod('sm2_encrypt')
-  // },
-  // sm3: wrapMethod('sm3'),
-  // sm4: wrapMethod('sm4_encrypt'),
   initSMCrypto,
-  sm2: {
-    generateKeyPairHex: wrapMethod('sm2_generate_keypair'),
-    compressPublicKeyHex: wrapMethod('compress_public_key_hex'),
-    encrypt(msg: Uint8Array, publicKey: string, options: SM2Options) {
+  _sm2: {
+    generateKeyPairHex: sm2_generate_keypair,
+    compressPublicKeyHex: compress_public_key_hex,
+    encrypt(msg: Uint8Array | string, publicKey: string, options: SM2EncryptionOptions) {
       options = Object.assign({
         cipherMode: 1,
         asn1: false,
         output: 'array'
       }, options)
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
       if (options.output === 'string') {
-        return wrapMethod('sm2_encrypt_hex')(publicKey, msg, {
+        return sm2_encrypt_hex(publicKey, msg, {
           asn1: options.asn1,
           c1c2c3: options.cipherMode === 0,
         })
       } else {
-        return wrapMethod('sm2_encrypt')(publicKey, msg, {
+        return sm2_encrypt(publicKey, msg, {
           asn1: options.asn1,
           c1c2c3: options.cipherMode === 0,
         })
       }
     },
-    decrypt(msg: Uint8Array, privateKey: string, options: SM2Options) {
+    decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions) {
       options = Object.assign({
         cipherMode: 1,
         asn1: false,
         output: 'array'
       }, options)
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
       if (options.output === 'string') {
-        return wrapMethod('sm2_decrypt_hex')(privateKey, msg, {
+        return sm2_decrypt_hex(privateKey, msg, {
           asn1: options.asn1,
           c1c2c3: options.cipherMode === 0,
         })
       } else {
-        return wrapMethod('sm2_decrypt')(privateKey, msg, {
+        return sm2_decrypt(privateKey, msg, {
           asn1: options.asn1,
           c1c2c3: options.cipherMode === 0,
         })
       }
-
     },
-    initRNGPool: wrapMethod('init_rng_pool'),
+    doSignature(msg: Uint8Array | string, privateKey: string, options: SM2SignatureOptions) {
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+      options = Object.assign({
+        hash: true,
+        der: true,
+      }, options)
+      return sm2_sign(privateKey, msg, options)
+    },
+    doVerifySignature(msg: Uint8Array | string, publicKey: string, signature: string, options: SM2SignatureOptions) {
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+      options = Object.assign({
+        hash: true,
+        der: true,
+      }, options)
+      return sm2_verify(publicKey, msg, signature, options)
+    },
+    initRNGPool: init_rng_pool,
   },
-  sm3: wrapMethod('sm3'),
-  hmac: wrapMethod('sm3_hmac'),
-  sm4: wrapMethod('sm4_encrypt'),
+  get sm2() {
+    return this._sm2
+  },
+  set sm2(value) {
+    this._sm2 = value
+  },
+  sm3,
+  hmac: sm3_hmac,
+  sm4: {
+    encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+      options = Object.assign({
+        mode: 'cbc',
+        padding: 'pkcs7',
+        output: 'array'
+      }, options)
+      options.iv = options.iv ? 
+        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+        : undefined
+      key = typeof key === 'string' ? hexToBytes(key) : key
+      if (options.output === 'string') {
+        return sm4_encrypt_hex(data, key, {
+          mode: options.mode,
+          padding: options.padding,
+          iv: options.iv,
+        })
+      }
+      return sm4_encrypt(data, key, {
+        mode: options.mode,
+        padding: options.padding,
+        iv: options.iv,
+      })
+    },
+    decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+      options = Object.assign({
+        mode: 'cbc',
+        padding: 'pkcs7',
+        output: 'array'
+      }, options)
+      options.iv = options.iv ? 
+        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+        : undefined
+      key = typeof key === 'string' ? hexToBytes(key) : key
+
+      return sm4_decrypt(data, key, {
+        mode: options.mode,
+        padding: options.padding,
+        iv: options.iv,
+      })
+    },
+    gcm: {
+      encrypt: sm4_encrypt_gcm,
+      decrypt: sm4_decrypt_gcm,
+    },
+  },
 }

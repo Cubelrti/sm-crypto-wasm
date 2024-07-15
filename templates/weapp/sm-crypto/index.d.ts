@@ -33,8 +33,6 @@ declare const _default: {
         gcm: {
             encrypt: typeof sm4_encrypt_gcm;
             decrypt: typeof sm4_decrypt_gcm;
-            xsm4_encrypt: typeof xsm4_encrypt;
-            xsm4_decrypt: typeof xsm4_decrypt;
         };
     };
 };
@@ -49,8 +47,6 @@ declare type InitInput = RequestInfo | URL | Response | BufferSource | WebAssemb
 
 declare interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly xsm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
-    readonly xsm4_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
     readonly init_rng_pool: (a: number, b: number) => void;
     readonly sm3: (a: number, b: number, c: number) => void;
     readonly sm2_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
@@ -134,23 +130,5 @@ declare interface SM4EncryptionOptions {
     iv?: string | Uint8Array;
     output?: 'array' | 'string';
 }
-
-/**
- * @param {Uint8Array} key
- * @param {Uint8Array} nonce
- * @param {Uint8Array} data
- * @param {Uint8Array} aad
- * @returns {Uint8Array}
- */
-declare function xsm4_decrypt(key: Uint8Array, nonce: Uint8Array, data: Uint8Array, aad: Uint8Array): Uint8Array;
-
-/**
- * @param {Uint8Array} key
- * @param {Uint8Array} nonce
- * @param {Uint8Array} data
- * @param {Uint8Array} aad
- * @returns {Uint8Array}
- */
-declare function xsm4_encrypt(key: Uint8Array, nonce: Uint8Array, data: Uint8Array, aad: Uint8Array): Uint8Array;
 
 export { }
