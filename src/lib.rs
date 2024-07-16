@@ -64,13 +64,6 @@ pub fn sm2_encrypt(pk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
 }
 
 #[wasm_bindgen]
-pub fn sm2_encrypt_hex(pk: &str, data: &[u8], options: JsValue) -> String {
-    console::log_1(&JsValue::from_str("invoked sm2_encrypt_hex"));
-    let data_enc = sm2_encrypt(pk, data, options);
-    hex::encode(data_enc)
-}
-
-#[wasm_bindgen]
 pub fn sm2_decrypt(sk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
     console::log_1(&"invoked sm2_decrypt".into());
     let options: Sm2EncryptOptions = serde_wasm_bindgen::from_value(options).unwrap();
@@ -89,13 +82,6 @@ pub fn sm2_decrypt(sk: &str, data: &[u8], options: JsValue) -> Vec<u8> {
         }
     };
     data_dec
-}
-
-#[wasm_bindgen]
-pub fn sm2_decrypt_hex(sk: &str, data: &[u8], options: JsValue) -> String {
-    console::log_1(&"invoked sm2_decrypt_hex".into());
-    let data_dec = sm2_decrypt(sk, data, options);
-    hex::encode(data_dec)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -192,6 +178,7 @@ pub struct Sm4EncryptionOptions {
     pub mode: String,
     pub padding: String,
     pub iv: Option<Vec<u8>>,
+    pub aad: Option<Vec<u8>>,
 }
 
 
@@ -209,32 +196,16 @@ pub fn sm4_encrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
             let iv = options.iv.as_ref().map(|v| v.as_slice()).unwrap();
             crypto::sm4::encrypt_ctr(input, key, iv, options.padding == "pkcs7")
         }
+        "gcm" => {
+            let iv = options.iv.as_ref().map(|v| v.as_slice()).unwrap();
+            let aad = options.aad.as_ref().map(|v| v.as_slice()).unwrap();
+            let (data, tag) = crypto::sm4::encrypt_gcm(input, key, iv, aad);
+            concvec!(&data, &tag)
+        }
         _ => panic!("mode {} not supported. for gcm, use sm4_encrypt_gcm instead", options.mode),
     };
     data
 }
-
-#[wasm_bindgen]
-pub fn sm4_encrypt_gcm(input: &[u8], key: &[u8], iv: &[u8], aad: &[u8]) -> Vec<u8> {
-    console::log_1(&JsValue::from_str("invoked sm4_encrypt_gcm"));
-    let (data, tag) = crypto::sm4::encrypt_gcm(input, key, iv, aad);
-    concvec!(&data, &tag)
-}
-
-#[wasm_bindgen]
-pub fn sm4_decrypt_gcm(input: &[u8], key: &[u8], iv: &[u8], aad: &[u8]) -> Vec<u8> {
-    console::log_1(&JsValue::from_str("invoked sm4_decrypt_gcm"));
-    let (data, tag) = input.split_at(input.len() - 16);
-    crypto::sm4::decrypt_gcm(data, key, iv, aad, tag).unwrap_or([].into())
-}
-
-#[wasm_bindgen]
-pub fn sm4_encrypt_hex(input: &[u8], key: &[u8], options: JsValue) -> String {
-    console::log_1(&JsValue::from_str("invoked sm4_encrypt_hex"));
-    let data = sm4_encrypt(input, key, options);
-    hex::encode(data)
-}
-
 
 #[wasm_bindgen]
 pub fn sm4_decrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
@@ -246,6 +217,16 @@ pub fn sm4_decrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
             crypto::sm4::CryptSM4CBC::new(key, iv).decrypt_cbc(input, options.padding == "pkcs7")
         },
         "ecb" => crypto::sm4::CryptSM4ECB::new(key).decrypt_ecb(input, options.padding == "pkcs7"),
+        "ctr" => {
+            let iv = options.iv.as_ref().map(|v| v.as_slice()).unwrap();
+            crypto::sm4::encrypt_ctr(input, key, iv, options.padding == "pkcs7")
+        }
+        "gcm" => {
+            let iv = options.iv.as_ref().map(|v| v.as_slice()).unwrap();
+            let aad = options.aad.as_ref().map(|v| v.as_slice()).unwrap();
+            let (data, tag) = input.split_at(input.len() - 16);
+            crypto::sm4::decrypt_gcm(data, key, iv, aad, tag).unwrap_or([].into())
+        }
         _ => panic!("mode {} not supported", options.mode),
     };
     data

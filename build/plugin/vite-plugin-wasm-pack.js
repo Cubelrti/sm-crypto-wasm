@@ -122,7 +122,6 @@ function wasmPackPlugin(options = {}) {
       outDir,
       '--out-name',
       outName,
-      ...(isDebug ? ['--dev'] : []),
       ...extraArgs,
     ];
 
@@ -149,6 +148,15 @@ function wasmPackPlugin(options = {}) {
       p.on('error', reject);
     });
   }
+  if (forceWatch || (forceWatch === undefined && process.env.NODE_ENV === 'development')) {
+    const watcher = watch([...watchDirectories, ...watchFiles], {
+      persistent: true,
+    });
+
+    watcher.on('change', () => {
+      compile(true);
+    });
+  }
 
   return {
     name: 'vite-plugin-wasm-pack',
@@ -160,15 +168,6 @@ function wasmPackPlugin(options = {}) {
       if (!ranInitialCompilation) {
         ranInitialCompilation = true;
         await checkWasmPack();
-        if (forceWatch || (forceWatch === undefined && process.env.WATCH)) {
-          const watcher = watch([...watchDirectories, ...watchFiles], {
-            persistent: true,
-          });
-
-          watcher.on('all', () => {
-            compile(true);
-          });
-        }
         await compile(false);
       }
     },

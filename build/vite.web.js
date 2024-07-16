@@ -7,13 +7,11 @@ const ROOT = 'templates/web/'
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
-    WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
+    WASM_BINARY_PATH: `void 0`,
   },
   build: {
     outDir: ROOT,
     rollupOptions: {
-      input: "html/index.html",
       output: {
         // format: 'cjs',
         dir: ROOT,
@@ -23,14 +21,8 @@ export default defineConfig({
     },
   },
   plugins: [
-    viteStaticCopy({
-      targets: [
-        { src: 'pkg/index_bg.wasm', dest: path.join(__dirname, '..', ROOT), rename: 'crypto.wasm' },
-      ],
-
-    }),
     wasmPackPlugin({
-      extraArgs: '--target web --release'
+      extraArgs: '--target web --dev'
     }),
   ]
 });

@@ -1,6 +1,6 @@
 import { SM2EncryptionOptions, SM2SignatureOptions, SM4EncryptionOptions } from './common'
-import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_decrypt_hex, sm2_encrypt, sm2_encrypt_hex, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_decrypt_gcm, sm4_encrypt, sm4_encrypt_gcm, sm4_encrypt_hex } from './pkg'
-import { hexToBytes } from './utils'
+import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_encrypt, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_encrypt } from './pkg'
+import { bytesToHex, hexToBytes } from './utils'
 export type Mod = typeof mod
 
 let wasmInstance: any = null
@@ -30,16 +30,14 @@ export default {
         output: 'array'
       }, options)
       msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+      const result = sm2_encrypt(publicKey, msg, {
+          asn1: options.asn1,
+          c1c2c3: options.cipherMode === 0,
+        })
       if (options.output === 'string') {
-        return sm2_encrypt_hex(publicKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return bytesToHex(result)
       } else {
-        return sm2_encrypt(publicKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return result
       }
     },
     decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions) {
@@ -49,16 +47,15 @@ export default {
         output: 'array'
       }, options)
       msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+
+      const result = sm2_decrypt(privateKey, msg, {
+        asn1: options.asn1,
+        c1c2c3: options.cipherMode === 0,
+      })
       if (options.output === 'string') {
-        return sm2_decrypt_hex(privateKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return bytesToHex(result)
       } else {
-        return sm2_decrypt(privateKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return result
       }
     },
     doSignature(msg: Uint8Array | string, privateKey: string, options: SM2SignatureOptions) {
@@ -91,19 +88,22 @@ export default {
       options.iv = options.iv ? 
         typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
         : undefined
+      options.aad = options.aad ? 
+        typeof options.aad === 'string' ? hexToBytes(options.aad) : options.aad
+        : undefined
       key = typeof key === 'string' ? hexToBytes(key) : key
-      if (options.output === 'string') {
-        return sm4_encrypt_hex(data, key, {
-          mode: options.mode,
-          padding: options.padding,
-          iv: options.iv,
-        })
-      }
-      return sm4_encrypt(data, key, {
+
+      const result = sm4_encrypt(data, key, {
         mode: options.mode,
         padding: options.padding,
         iv: options.iv,
+        aad: options.aad,
       })
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
     },
     decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
       options = Object.assign({
@@ -114,17 +114,22 @@ export default {
       options.iv = options.iv ? 
         typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
         : undefined
+      options.aad = options.aad ? 
+        typeof options.aad === 'string' ? hexToBytes(options.aad) : options.aad
+        : undefined
       key = typeof key === 'string' ? hexToBytes(key) : key
 
-      return sm4_decrypt(data, key, {
+      const result = sm4_decrypt(data, key, {
         mode: options.mode,
         padding: options.padding,
         iv: options.iv,
+        aad: options.aad,
       })
-    },
-    gcm: {
-      encrypt: sm4_encrypt_gcm,
-      decrypt: sm4_decrypt_gcm,
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
     },
   },
 }

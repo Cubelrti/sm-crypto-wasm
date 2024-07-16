@@ -7,7 +7,6 @@ use ghash::{
     },
     GHash,
 };
-
 // GM/T 0002-2012 SM4分组密码算法标准（中文版本）
 // https://github.com/guanzhi/GM-Standards/blob/master/GMT%E6%AD%A3%E5%BC%8F%E6%A0%87%E5%87%86/GMT%200002-2012%20SM4%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81%E7%AE%97%E6%B3%95.pdf
 //
@@ -364,6 +363,19 @@ fn padding(data: Vec<u8>) -> Vec<u8> {
 }
 
 fn unpadding(data: Vec<u8>) -> Vec<u8> {
+    if data.len() == 0 {
+        panic!("Invalid padding");
+    }
+    let last_byte = data[data.len() - 1];
+    if last_byte as usize > data.len() || last_byte > 16 {
+        panic!("Invalid padding");
+    }
+    // Check if the padding is correct
+    for i in 1..(last_byte as usize + 1) {
+        if data[data.len() - i] != last_byte {
+            panic!("Invalid padding");
+        }
+    }
     data[0..(data.len() - data[data.len() - 1] as usize)].to_vec()
 }
 

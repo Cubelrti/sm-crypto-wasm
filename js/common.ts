@@ -20,4 +20,5 @@ export interface SM4EncryptionOptions {
   padding?: 'pkcs7' | 'none'
   iv?: string | Uint8Array
   output?: 'array' | 'string'
+  aad?: string | Uint8Array
 }

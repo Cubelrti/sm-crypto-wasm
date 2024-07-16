@@ -1,5 +1,4 @@
 cargo-features = ["trim-paths"]
-
 # You must change these to your own details.
 [package]
 name = "sm-crypto-wasm"

@@ -7,6 +7,7 @@
   "scripts": {
     "dev:weapp": "vite --config build/vite.weapp.js",
     "dev:alipay": "vite --config build/vite.alipay.js",
+    "dev:web": "vite --config build/vite.web.js",
     "build:alipay": "vite build --config build/vite.alipay.js",
     "build:weapp": "vite build --config build/vite.weapp.js",
     "build:tt": "vite build --config build/vite.tt.js",

@@ -19,8 +19,8 @@ declare const _default: {
     sm2: {
         generateKeyPairHex: typeof sm2_generate_keypair;
         compressPublicKeyHex: typeof compress_public_key_hex;
-        encrypt(msg: Uint8Array | string, publicKey: string, options: SM2EncryptionOptions): string | Uint8Array;
-        decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions): string | Uint8Array;
+        encrypt(msg: Uint8Array | string, publicKey: string, options: SM2EncryptionOptions): any;
+        decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions): any;
         doSignature(msg: Uint8Array | string, privateKey: string, options: SM2SignatureOptions): string;
         doVerifySignature(msg: Uint8Array | string, publicKey: string, signature: string, options: SM2SignatureOptions): boolean;
         initRNGPool: typeof init_rng_pool;
@@ -28,12 +28,8 @@ declare const _default: {
     sm3: typeof sm3;
     hmac: typeof sm3_hmac;
     sm4: {
-        encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): string | Uint8Array;
-        decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): Uint8Array;
-        gcm: {
-            encrypt: typeof sm4_encrypt_gcm;
-            decrypt: typeof sm4_decrypt_gcm;
-        };
+        encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): any;
+        decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): any;
     };
 };
 export default _default;
@@ -50,9 +46,7 @@ declare interface InitOutput {
     readonly init_rng_pool: (a: number, b: number) => void;
     readonly sm3: (a: number, b: number, c: number) => void;
     readonly sm2_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-    readonly sm2_encrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-    readonly sm2_decrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_sign: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm2_verify: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
     readonly sm2_generate_keypair: () => number;
@@ -61,7 +55,6 @@ declare interface InitOutput {
     readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm4_encrypt_gcm: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
     readonly sm4_decrypt_gcm: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
-    readonly sm4_encrypt_hex: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly sm4_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly main_js: () => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
@@ -105,24 +98,6 @@ declare function sm3(input: Uint8Array): Uint8Array;
  * @returns {Uint8Array}
  */
 declare function sm3_hmac(key: Uint8Array, msg: Uint8Array): Uint8Array;
-
-/**
- * @param {Uint8Array} input
- * @param {Uint8Array} key
- * @param {Uint8Array} iv
- * @param {Uint8Array} aad
- * @returns {Uint8Array}
- */
-declare function sm4_decrypt_gcm(input: Uint8Array, key: Uint8Array, iv: Uint8Array, aad: Uint8Array): Uint8Array;
-
-/**
- * @param {Uint8Array} input
- * @param {Uint8Array} key
- * @param {Uint8Array} iv
- * @param {Uint8Array} aad
- * @returns {Uint8Array}
- */
-declare function sm4_encrypt_gcm(input: Uint8Array, key: Uint8Array, iv: Uint8Array, aad: Uint8Array): Uint8Array;
 
 declare interface SM4EncryptionOptions {
     mode?: 'cbc' | 'ecb' | 'ctr' | 'gcm';
