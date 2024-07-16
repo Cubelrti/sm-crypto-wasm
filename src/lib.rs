@@ -202,7 +202,7 @@ pub fn sm4_encrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
             let (data, tag) = crypto::sm4::encrypt_gcm(input, key, iv, aad);
             concvec!(&data, &tag)
         }
-        _ => panic!("mode {} not supported. for gcm, use sm4_encrypt_gcm instead", options.mode),
+        _ => panic!("mode {} is not supported.", options.mode),
     };
     data
 }
@@ -227,7 +227,7 @@ pub fn sm4_decrypt(input: &[u8], key: &[u8], options: JsValue) -> Vec<u8> {
             let (data, tag) = input.split_at(input.len() - 16);
             crypto::sm4::decrypt_gcm(data, key, iv, aad, tag).unwrap_or([].into())
         }
-        _ => panic!("mode {} not supported", options.mode),
+        _ => panic!("mode {} is not supported", options.mode),
     };
     data
 }

@@ -7,7 +7,7 @@ const ROOT = 'templates/web/'
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    WASM_BINARY_PATH: `void 0`,
+    WASM_BINARY_PATH: `undefined`,
   },
   build: {
     outDir: ROOT,
@@ -22,7 +22,7 @@ export default defineConfig({
   },
   plugins: [
     wasmPackPlugin({
-      extraArgs: '--target web --dev'
+      extraArgs: '--target web --release'
     }),
   ]
 });
