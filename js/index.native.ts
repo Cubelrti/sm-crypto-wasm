@@ -76,8 +76,18 @@ export default {
     },
     initRNGPool: init_rng_pool,
   },
-  sm3,
-  hmac: sm3_hmac,
+  sm3(input: string | Uint8Array, options?: {
+    key?: string | Uint8Array,
+  }) {
+    input = typeof input === 'string' ? hexToBytes(input) : input
+    let key = options?.key ? 
+      typeof options?.key === 'string' ? hexToBytes(options.key) : options.key
+      : undefined
+    if (key) {
+      return sm3_hmac(key, input)
+    }
+    return sm3(input)
+  },
   sm4: {
     encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
       options = Object.assign({

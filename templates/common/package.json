@@ -1,12 +1,13 @@
 {
   "name": "@sm-crypto-wasm/__PLATFORM__",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Chinese standard cryptographic algorithms in WebAssembly",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "Cubelrti",
-  "license": "MIT"
+  "license": "MIT",
+  "types": "./index.d.ts"
 }

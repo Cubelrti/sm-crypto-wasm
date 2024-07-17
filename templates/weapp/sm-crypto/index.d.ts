@@ -25,8 +25,9 @@ declare const _default: {
         doVerifySignature(msg: Uint8Array | string, publicKey: string, signature: string, options: SM2SignatureOptions): boolean;
         initRNGPool: typeof init_rng_pool;
     };
-    sm3: typeof sm3;
-    hmac: typeof sm3_hmac;
+    sm3(input: string | Uint8Array, options?: {
+        key?: string | Uint8Array;
+    }): Uint8Array;
     sm4: {
         encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): any;
         decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions): any;
@@ -53,8 +54,6 @@ declare interface InitOutput {
     readonly compress_public_key_hex: (a: number, b: number, c: number) => void;
     readonly sm3_hmac: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly sm4_encrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-    readonly sm4_encrypt_gcm: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
-    readonly sm4_decrypt_gcm: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
     readonly sm4_decrypt: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly main_js: () => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
@@ -86,24 +85,12 @@ declare interface SM2SignatureOptions {
     userId?: string;
 }
 
-/**
- * @param {Uint8Array} input
- * @returns {Uint8Array}
- */
-declare function sm3(input: Uint8Array): Uint8Array;
-
-/**
- * @param {Uint8Array} key
- * @param {Uint8Array} msg
- * @returns {Uint8Array}
- */
-declare function sm3_hmac(key: Uint8Array, msg: Uint8Array): Uint8Array;
-
 declare interface SM4EncryptionOptions {
     mode?: 'cbc' | 'ecb' | 'ctr' | 'gcm';
     padding?: 'pkcs7' | 'none';
     iv?: string | Uint8Array;
     output?: 'array' | 'string';
+    aad?: string | Uint8Array;
 }
 
 export { }

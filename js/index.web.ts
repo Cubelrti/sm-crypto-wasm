@@ -207,6 +207,13 @@ document.getElementById('sm3').addEventListener('click', async () => {
     const settingsContainer = document.getElementById('settings')
     settingsContainer.innerHTML = ''
 
+    // hmac input
+    const hmac = document.createElement('textarea')
+    hmac.placeholder = 'HMAC Key (hex), optional'
+    hmac.id = 'hmac'
+
+    settingsContainer.appendChild(hmac)
+
     // set default value
     select.value = 'hash'
     const content = document.getElementById('content') as HTMLTextAreaElement
@@ -224,7 +231,9 @@ document.getElementById('sm3').addEventListener('click', async () => {
             input = utf8ToBytes(input)
         }
         try {
-            let result = smCrypto.sm3(input)
+            let result = smCrypto.sm3(input, {
+                key: hmac.value ? hexToBytes(hmac.value) : undefined,
+            })
             const data: Record<string, string> = {
                 hex: bytesToHex(result),
             }
