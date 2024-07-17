@@ -1,6 +1,7 @@
 // index.js
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
-import smCrypto from '../../sm-crypto/index'
+import smCrypto from '@/sm-crypto/index'
+smCrypto.initSMCrypto().then(console.log)
 
 function hexToBytes(str) {
   const bytes = []
@@ -44,41 +45,7 @@ Page({
         }
       })
     })
-    let key1 = hexToBytes("02020202020202020202020202020202")
-    let key2 = hexToBytes("03030303030303030303030303030303")
-    let nonce = new Uint8Array([65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88]) // 24 * 8 = 192
-    let data = new Uint8Array([
-      88, 83, 77, 52, 45, 71, 67, 77
-    ]) // XSM4-GCM
-    let cipher = smCrypto.sm4.gcm.xsm4_encrypt(
-      key1,
-      nonce,
-      data,
-      new Uint8Array(0)
-    )
-    console.log(cipher)
-    let plaintext = smCrypto.sm4.gcm.xsm4_decrypt(
-      key1,
-      nonce,
-      cipher,
-      new Uint8Array(0),
-    )
-    console.log(plaintext)
-    let ct = smCrypto.sm4.gcm.encrypt(
-      hexToBytes('DEADBEEF'),
-      hexToBytes('0123456789ABCDEFFEDCBA9876543210'),
-      hexToBytes('00001234567800000000ABCD0000'),
-      hexToBytes('FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2'),
-    )
-    console.log(bytesToHex(ct));
-    let pt = smCrypto.sm4.gcm.decrypt(
-      ct,
-      hexToBytes('0123456789ABCDEFFEDCBA9876543210'),
-      hexToBytes('00001234567800000000ABCD0000'),
-      hexToBytes('FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2'),
-    )
-    console.log(bytesToHex(pt))
-    return
+
     const kp = smCrypto.sm2.generateKeyPairHex()
     console.log(kp)
     const compressed = smCrypto.sm2.compressPublicKeyHex(kp.publicKey);
@@ -113,20 +80,6 @@ Page({
        output: 'string'
     })
     console.log(sm4Result)
-    const gcm = smCrypto.sm4.gcm.encrypt(
-      new Uint8Array([101, 120, 97, 109, 112, 108, 101, 112, 108, 97, 105, 110, 116, 101, 120, 116]), 
-      hexToBytes("6368616e676520746869732070617373"),
-      hexToBytes("07d168e0517656ab7131f495"),
-      new Uint8Array(0)
-    )
-    console.log(bytesToHex(gcm))
-    const gcmPlain = smCrypto.sm4.gcm.decrypt(
-      gcm, 
-      hexToBytes("6368616e676520746869732070617373"),
-      hexToBytes("07d168e0517656ab7131f495"),
-      new Uint8Array(0)
-    )
-    console.log(gcmPlain)
     global.smCrypto = smCrypto
   },
   data: {

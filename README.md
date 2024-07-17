@@ -100,8 +100,29 @@ npx degit github:Cubelrti/sm-crypto-wasm/templates/alipay/sm-crypto sm-crypto
 npx degit github:Cubelrti/sm-crypto-wasm/templates/tt/sm-crypto sm-crypto
 ```
 
+Additionally, alipay need to set `worker` path in `app.json`:
+
+```json
+{
+  "worker": "sm-crypto/index.js"
+}
+```
+
+Then you can import the package in your project. You need to set `resolveAlias` in `app.json` if you want to use absolute path like this:
+
+```json
+{
+  "resolveAlias": {
+    "@/*": "/*"
+  },
+}
+```
+
 ```ts
-import * as smCrypto from 'sm-crypto'
+// pages/index/index.js
+import smCrypto from '@/sm-crypto/index'
+
+smCrypto.initSMCrypto().then(console.log)
 ```
 
 or, view `templates` for specific platform to start.
