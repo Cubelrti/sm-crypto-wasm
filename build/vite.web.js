@@ -9,6 +9,7 @@ export default defineConfig({
   define: {
     WASM_BINARY_PATH: `undefined`,
   },
+  base: '/sm-crypto-wasm/',
   build: {
     outDir: ROOT,
     rollupOptions: {

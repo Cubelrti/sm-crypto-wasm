@@ -1,12 +1,14 @@
 # sm-crypto-wasm
 
-<center>
+<p align="center">
 Universal ShangMi Cryptography Library in WebAssembly
 
 基于 WebAssembly 的全平台国密加解密库
-</center>
+</p>
 
-Disclaimer: This project is still under development, and the API may change in the future.
+⚠️ Disclaimer: This project is still under development, and the API may change in the future.
+
+Try with [Playground](https://cubelrti.github.io/sm-crypto-wasm/)!
 
 ## Features
 
