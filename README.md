@@ -137,6 +137,7 @@ Since the project is still under development, you may need to build the project 
 
 Alternatively, you can see the code snippet for several DevTools:
 - [WeChat DevTools Snippet](https://developers.weixin.qq.com/s/Q8Qt1Nmt7dS5)
+- [Douyin DevTools Snippet](https://developer.open-douyin.com/ide/minicode/05d355e948825a28e8b70a5b28a07325)
 
 ## API
 
