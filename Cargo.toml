@@ -1,0 +1,85 @@
+cargo-features = ["trim-paths"]
+# You must change these to your own details.
+[package]
+name = "sm-crypto-wasm"
+description = "My super awesome Rust, WebAssembly, and Webpack project!"
+version = "0.1.0"
+authors = ["You <you@example.com>"]
+categories = ["wasm"]
+readme = "README.md"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+# If you uncomment this line, it will enable `wee_alloc`:
+# default = ["wee_alloc"]
+
+[dependencies]
+# The `wasm-bindgen` crate provides the bare minimum functionality needed
+# to interact with JavaScript.
+wasm-bindgen = "0.2.45"
+
+# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
+# compared to the default allocator's ~10K. However, it is slower than the default
+# allocator, so it's not enabled by default.
+# wee_alloc = { version = "0.4.5", optional = true, features = ["static_array_backend"] }
+js-sys = "0.3.61"
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0"
+serde_json = "1.0.114"
+serde-wasm-bindgen = "0.6.5"
+once_cell = "1.8.0"
+lazy_static = "1.4.0"
+ghash = { version = "=0.6.0-pre.0", default-features = false }
+hex = "0.4.3"
+getrandom = { version = "0.2", features = ["js"] }
+console_error_panic_hook = { version = "0.1.1", optional = true }
+gloo-utils = { version = "0.2.0", features = ["serde"] }
+rand = "0.8.5"
+rand_core = "0.6"
+rand_chacha = "0.3.1"
+bytemuck = "1.9.1"
+base64 = "*"
+bytes = "1.1.0"
+num-traits = "0.2.14"
+num-bigint = "0.4.3"
+num-integer = "0.1.44"
+yasna = {version = "0.5.0", features = ["num-bigint"]}
+strum = "0.26"
+strum_macros = "0.26"
+wasm-bindgen-futures = "0.4.42"
+# The `web-sys` crate allows you to interact with the various browser APIs,
+# like the DOM.
+[dependencies.web-sys]
+version = "0.3.22"
+features = ["console"]
+
+
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so it's only enabled
+# in debug mode.
+[target."cfg(debug_assertions)".dependencies]
+console_error_panic_hook = "0.1.5"
+
+# These crates are used for running unit tests.
+[dev-dependencies]
+wasm-bindgen-test = "0.3.42"
+futures = "0.3.30"
+js-sys = "0.3.22"
+wasm-bindgen-futures = "0.4.42"
+
+
+[profile.release]
+lto = true
+opt-level = "z"
+codegen-units = 1
+panic = 'abort'
+# remap-path-prefix = "/dev/"
+# remap-path-scope = "all"
+trim-paths = "all"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz"]

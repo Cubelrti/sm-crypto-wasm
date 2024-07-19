@@ -1,0 +1,3 @@
+<view class="intro">Welcome to Mini Program</view>
+<button open-type="" bindtap="load" data-aweme-id=""> load wasm</button>
+<button open-type="" bindtap="test" data-aweme-id=""> test wasm</button>

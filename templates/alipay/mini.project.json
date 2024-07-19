@@ -1,0 +1,19 @@
+{
+  "format": 2,
+  "developOptions": {
+    "skipTranspile": false,
+    "minify": false,
+    "hotReload": false
+  },
+  "compileOptions": {
+    "globalObjectMode": "enable",
+    "transpile": {
+      "script": {
+        "ignore": [
+          "node_modules/**"
+        ]
+      }
+    },
+    "component2": false
+  }
+}

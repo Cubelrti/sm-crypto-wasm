@@ -1,0 +1,86 @@
+#app {
+  font-family: monospace;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  height: 100vh;
+  background-color: #f9f9f9;
+}
+.sidebar {
+  width: 100px;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+}
+.sidebar button {
+  background: none;
+  border: none;
+  color: black;
+  cursor: pointer;
+  margin: 10px 0;
+}
+.sidebar button:hover {
+  color: white;
+}
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  font-family: monospace;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.settings {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  background-color: #fff;
+}
+.playground {
+  display: flex;
+  flex: 1;
+}
+.output {
+  flex: 1;
+  padding: 20px;
+  background-color: #fff;
+  margin-left: 20px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+input, select, textarea {
+  width: -webkit-fill-available;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+}
+textarea {
+  min-height: 40px;
+}
+button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #0056b3;
+}

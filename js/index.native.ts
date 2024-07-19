@@ -1,0 +1,145 @@
+import { SM2EncryptionOptions, SM2SignatureOptions, SM4EncryptionOptions } from './common'
+import mod, { compress_public_key_hex, init_rng_pool, sm2_decrypt, sm2_encrypt, sm2_generate_keypair, sm2_sign, sm2_verify, sm3, sm3_hmac, sm4_decrypt, sm4_encrypt } from './pkg'
+import { bytesToHex, hexToBytes } from './utils'
+export type Mod = typeof mod
+
+let wasmInstance: any = null
+declare const WASM_BINARY_PATH: string
+
+async function initSMCrypto() {
+  // 直接创建，不经过 worker
+  if (wasmInstance) return
+  try {
+    const instance = await mod(WASM_BINARY_PATH)
+    console.log('init sm-crypto-wasm direct success', instance)
+    wasmInstance = instance
+  } catch (error) {
+    console.log('init sm-crypto-wasm direct failed', error)
+    wasmInstance = null
+  }
+}
+export default {
+  initSMCrypto,
+  sm2: {
+    generateKeyPairHex: sm2_generate_keypair,
+    compressPublicKeyHex: compress_public_key_hex,
+    encrypt(msg: Uint8Array | string, publicKey: string, options: SM2EncryptionOptions) {
+      options = Object.assign({
+        cipherMode: 1,
+        asn1: false,
+        output: 'array'
+      }, options)
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+      const result = sm2_encrypt(publicKey, msg, {
+          asn1: options.asn1,
+          c1c2c3: options.cipherMode === 0,
+        })
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
+    },
+    decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions) {
+      options = Object.assign({
+        cipherMode: 1,
+        asn1: false,
+        output: 'array'
+      }, options)
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+
+      const result = sm2_decrypt(privateKey, msg, {
+        asn1: options.asn1,
+        c1c2c3: options.cipherMode === 0,
+      })
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
+    },
+    doSignature(msg: Uint8Array | string, privateKey: string, options: SM2SignatureOptions) {
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+      options = Object.assign({
+        hash: true,
+        der: true,
+      }, options)
+      return sm2_sign(privateKey, msg, options)
+    },
+    doVerifySignature(msg: Uint8Array | string, publicKey: string, signature: string, options: SM2SignatureOptions) {
+      msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+      options = Object.assign({
+        hash: true,
+        der: true,
+      }, options)
+      return sm2_verify(publicKey, msg, signature, options)
+    },
+    initRNGPool: init_rng_pool,
+  },
+  sm3(input: string | Uint8Array, options?: {
+    key?: string | Uint8Array,
+  }) {
+    input = typeof input === 'string' ? hexToBytes(input) : input
+    let key = options?.key ? 
+      typeof options?.key === 'string' ? hexToBytes(options.key) : options.key
+      : undefined
+    if (key) {
+      return sm3_hmac(key, input)
+    }
+    return sm3(input)
+  },
+  sm4: {
+    encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+      options = Object.assign({
+        mode: 'cbc',
+        padding: 'pkcs7',
+        output: 'array'
+      }, options)
+      options.iv = options.iv ? 
+        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+        : undefined
+      options.aad = options.aad ? 
+        typeof options.aad === 'string' ? hexToBytes(options.aad) : options.aad
+        : undefined
+      key = typeof key === 'string' ? hexToBytes(key) : key
+
+      const result = sm4_encrypt(data, key, {
+        mode: options.mode,
+        padding: options.padding,
+        iv: options.iv,
+        aad: options.aad,
+      })
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
+    },
+    decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+      options = Object.assign({
+        mode: 'cbc',
+        padding: 'pkcs7',
+        output: 'array'
+      }, options)
+      options.iv = options.iv ? 
+        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+        : undefined
+      options.aad = options.aad ? 
+        typeof options.aad === 'string' ? hexToBytes(options.aad) : options.aad
+        : undefined
+      key = typeof key === 'string' ? hexToBytes(key) : key
+
+      const result = sm4_decrypt(data, key, {
+        mode: options.mode,
+        padding: options.padding,
+        iv: options.iv,
+        aad: options.aad,
+      })
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
+    },
+  },
+}
