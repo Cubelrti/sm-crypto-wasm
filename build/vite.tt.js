@@ -15,7 +15,7 @@ export default defineConfig({
     PLATFORM: 'tt',
     __CONVERT_ARRAYBUFFER__: true,
     WORKER_SCRIPT_PATH: `'sm-crypto/workers/sm-crypto.js'`,
-    WASM_BINARY_PATH: `'sm-crypto/crypto.wasm'`,
+    WASM_BINARY_PATH: `'/sm-crypto/crypto.wasm'`,
   },
   build: {
     lib: {
