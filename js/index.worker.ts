@@ -1,6 +1,6 @@
 import { SM2EncryptionOptions, SM2SignatureOptions, SM4EncryptionOptions } from './common'
 import type * as mod from './pkg/index'
-import { hexToBytes } from './utils'
+import { bytesToHex, hexToBytes } from './utils'
 type Mod = typeof mod
 type ArgsType<T> = T extends (...args: infer U) => any ? U : never
 
@@ -112,66 +112,59 @@ function wrapMethod<M extends keyof Mod>(
 const sm2_generate_keypair = wrapMethod('sm2_generate_keypair')
 const compress_public_key_hex = wrapMethod('compress_public_key_hex')
 const sm2_encrypt = wrapMethod('sm2_encrypt')
-const sm2_encrypt_hex = wrapMethod('sm2_encrypt_hex')
 const sm2_decrypt = wrapMethod('sm2_decrypt')
-const sm2_decrypt_hex = wrapMethod('sm2_decrypt_hex')
 const sm2_sign = wrapMethod('sm2_sign')
 const sm2_verify = wrapMethod('sm2_verify')
 const init_rng_pool = wrapMethod('init_rng_pool')
 const sm3 = wrapMethod('sm3')
 const sm3_hmac = wrapMethod('sm3_hmac')
 const sm4_encrypt = wrapMethod('sm4_encrypt')
-const sm4_encrypt_hex = wrapMethod('sm4_encrypt_hex')
 const sm4_decrypt = wrapMethod('sm4_decrypt')
-const sm4_encrypt_gcm = wrapMethod('sm4_encrypt_gcm')
-const sm4_decrypt_gcm = wrapMethod('sm4_decrypt_gcm')
 
 interface SM2Options {
   cipherMode: 1 | 0
   asn1: boolean
   output: 'array' | 'string'
 }
+
 export default {
   initSMCrypto,
-  _sm2: {
+  sm2: {
     generateKeyPairHex: sm2_generate_keypair,
     compressPublicKeyHex: compress_public_key_hex,
-    encrypt(msg: Uint8Array | string, publicKey: string, options: SM2EncryptionOptions) {
+    async encrypt(msg: Uint8Array | string, publicKey: string, options: SM2EncryptionOptions) {
       options = Object.assign({
         cipherMode: 1,
         asn1: false,
         output: 'array'
       }, options)
       msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+      const result = await sm2_encrypt(publicKey, msg, {
+          asn1: options.asn1,
+          c1c2c3: options.cipherMode === 0,
+        })
       if (options.output === 'string') {
-        return sm2_encrypt_hex(publicKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return bytesToHex(result)
       } else {
-        return sm2_encrypt(publicKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return result
       }
     },
-    decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions) {
+    async decrypt(msg: Uint8Array | string, privateKey: string, options: SM2EncryptionOptions) {
       options = Object.assign({
         cipherMode: 1,
         asn1: false,
         output: 'array'
       }, options)
       msg = typeof msg === 'string' ? hexToBytes(msg) : msg
+
+      const result = await sm2_decrypt(privateKey, msg, {
+        asn1: options.asn1,
+        c1c2c3: options.cipherMode === 0,
+      })
       if (options.output === 'string') {
-        return sm2_decrypt_hex(privateKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return bytesToHex(result)
       } else {
-        return sm2_decrypt(privateKey, msg, {
-          asn1: options.asn1,
-          c1c2c3: options.cipherMode === 0,
-        })
+        return result
       }
     },
     doSignature(msg: Uint8Array | string, privateKey: string, options: SM2SignatureOptions) {
@@ -192,16 +185,20 @@ export default {
     },
     initRNGPool: init_rng_pool,
   },
-  get sm2() {
-    return this._sm2
+  sm3(input: string | Uint8Array, options?: {
+    key?: string | Uint8Array,
+  }) {
+    input = typeof input === 'string' ? hexToBytes(input) : input
+    let key = options?.key ? 
+      typeof options?.key === 'string' ? hexToBytes(options.key) : options.key
+      : undefined
+    if (key) {
+      return sm3_hmac(key, input)
+    }
+    return sm3(input)
   },
-  set sm2(value) {
-    this._sm2 = value
-  },
-  sm3,
-  hmac: sm3_hmac,
   sm4: {
-    encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+    async encrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
       options = Object.assign({
         mode: 'cbc',
         padding: 'pkcs7',
@@ -210,40 +207,48 @@ export default {
       options.iv = options.iv ? 
         typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
         : undefined
-      key = typeof key === 'string' ? hexToBytes(key) : key
-      if (options.output === 'string') {
-        return sm4_encrypt_hex(data, key, {
-          mode: options.mode,
-          padding: options.padding,
-          iv: options.iv,
-        })
-      }
-      return sm4_encrypt(data, key, {
-        mode: options.mode,
-        padding: options.padding,
-        iv: options.iv,
-      })
-    },
-    decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
-      options = Object.assign({
-        mode: 'cbc',
-        padding: 'pkcs7',
-        output: 'array'
-      }, options)
-      options.iv = options.iv ? 
-        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+      options.aad = options.aad ? 
+        typeof options.aad === 'string' ? hexToBytes(options.aad) : options.aad
         : undefined
       key = typeof key === 'string' ? hexToBytes(key) : key
 
-      return sm4_decrypt(data, key, {
+      const result = await sm4_encrypt(data, key, {
         mode: options.mode,
         padding: options.padding,
         iv: options.iv,
+        aad: options.aad,
       })
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
     },
-    gcm: {
-      encrypt: sm4_encrypt_gcm,
-      decrypt: sm4_decrypt_gcm,
+    async decrypt(data: Uint8Array, key: Uint8Array | string, options: SM4EncryptionOptions) {
+      options = Object.assign({
+        mode: 'cbc',
+        padding: 'pkcs7',
+        output: 'array'
+      }, options)
+      options.iv = options.iv ? 
+        typeof options.iv === 'string' ? hexToBytes(options.iv) : options.iv
+        : undefined
+      options.aad = options.aad ? 
+        typeof options.aad === 'string' ? hexToBytes(options.aad) : options.aad
+        : undefined
+      key = typeof key === 'string' ? hexToBytes(key) : key
+
+      const result = await sm4_decrypt(data, key, {
+        mode: options.mode,
+        padding: options.padding,
+        iv: options.iv,
+        aad: options.aad,
+      })
+      if (options.output === 'string') {
+        return bytesToHex(result)
+      } else {
+        return result
+      }
     },
   },
 }

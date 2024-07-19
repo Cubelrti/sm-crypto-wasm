@@ -136,8 +136,7 @@ or, view `templates` for specific platform to start.
 Since the project is still under development, you may need to build the project by yourself.
 
 Alternatively, you can see the code snippet for several DevTools:
-- [WeChat DevTools Snippet](https://example.com)
-- [Alipay DevTools Snippet](https://example.com)
+- [WeChat DevTools Snippet](https://developers.weixin.qq.com/s/Q8Qt1Nmt7dS5)
 
 ## API
 
