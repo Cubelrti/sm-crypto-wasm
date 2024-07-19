@@ -2,7 +2,9 @@
 
 <p align="center">
 Universal ShangMi Cryptography Library in WebAssembly
+</p>
 
+<p align="center">
 基于 WebAssembly 的全平台国密加解密库
 </p>
 
@@ -18,7 +20,7 @@ Try with [Playground](https://cubelrti.github.io/sm-crypto-wasm/)!
 
 ## Supported Runtime
 
-- Web, Browser(H5)
+- Web, Browser (H5)
 - WeChat Mini Program
 - Douyin Mini Program / Toutiao Mini Program
 - Alipay Mini Program (Worker Only, Enterprise Entity Required)
@@ -58,7 +60,7 @@ For other platforms, you may need to provide your own secure random number gener
 
 It is **strongly recommended** to use secure random number generation for security. We provide a shim for `getRandomValues` for unsupported platforms using `Math.random()` to prevent panicking by default, but it is not secure enough for any production use. A warning will be printed if you don't securely seed the random number generator.
 
-Internally we use `ChaCha` cipher for random number generation, which is secure enough for most cases. But for security, the seed should be generated from a secure source and contain enough entropy.
+Internally we use `ChaCha8` cipher for random number generation, which is secure enough for most cases. But for security, the seed should be generated from a secure source and contain enough entropy.
 
 ## Performance
 
@@ -102,11 +104,13 @@ npx degit github:Cubelrti/sm-crypto-wasm/templates/alipay/sm-crypto sm-crypto
 npx degit github:Cubelrti/sm-crypto-wasm/templates/tt/sm-crypto sm-crypto
 ```
 
-Additionally, alipay need to set `worker` path in `app.json`:
+Additionally, alipay need to set `workers` path in `app.json`:
 
 ```json
 {
-  "worker": "sm-crypto/index.js"
+  "workers": [
+    "sm-crypto/workers/sm-crypto.js"
+  ],
 }
 ```
 
@@ -166,14 +170,6 @@ let ciphertext = sm2.encrypt(new Uint8Array([
       0xde, 0xad, 0xbe, 0xef
 ]), compressed, { output: 'array', asn1: true, cipherMode: 1}) // => Uint8Array
 
-// sm4-gcm (experimental), only support bytes input and output
-const gcm = smCrypto.sm4.gcm(
-  deadbeef, 
-  hexToBytes("0123456789ABCDEFFEDCBA9876543210"),
-  hexToBytes("00001234567800000000ABCD"),
-  hexToBytes("FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2")
-)
-
 ```
 
 #### Signature and Verification
@@ -217,6 +213,12 @@ let ciphertext = sm4.encrypt(new Uint8Array([
 let plaintext = sm4.decrypt(new Uint8Array([
       0xde, 0xad, 0xbe, 0xef
 ]), key, { output: 'string', mode: 'cbc', iv: 'fedcba98765432100123456789abcdef' }) // => string
+
+// gcm (experimental), need to provide aad and 12-byte iv
+// iv longer than 12 bytes are hashed and used as counter part
+let gcm = sm4.encrypt(new Uint8Array([
+      0xde, 0xad, 0xbe, 0xef
+]), hexToBytes("0123456789ABCDEFFEDCBA9876543210"), { output: 'string', mode: 'gcm', iv: '00001234567800000000ABCD', aad: 'FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2' }) // => string
 ```
 Note that input should always be Uint8Array, and output can be either Uint8Array or hex encoded string.
 You should encode the input by yourself if it is UTF-8 string by `new TextEncoder().encode`. You can refer to `js/shim-encoding.js` if you don't have TextEncoder/TextDecoder in your environment.

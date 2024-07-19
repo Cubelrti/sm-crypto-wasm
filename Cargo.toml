@@ -2,9 +2,9 @@ cargo-features = ["trim-paths"]
 # You must change these to your own details.
 [package]
 name = "sm-crypto-wasm"
-description = "My super awesome Rust, WebAssembly, and Webpack project!"
+description = "Universal Chinese ShangMi Cryptography Algorithm in WebAssembly"
 version = "0.1.0"
-authors = ["You <you@example.com>"]
+authors = ["tankrity@gmail.com"]
 categories = ["wasm"]
 readme = "README.md"
 edition = "2018"
