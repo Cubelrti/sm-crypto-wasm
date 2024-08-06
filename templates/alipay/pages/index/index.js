@@ -37,7 +37,9 @@ Page({
       0xde, 0xad, 0xbe, 0xef
     ]))
     console.log(toHex(sm3Result))
-    const sm4Result = await smCrypto.sm4(new Uint8Array(16), new Uint8Array(16), new Uint8Array(16))
+    const sm4Result = await smCrypto.sm4.encrypt(new Uint8Array(16), new Uint8Array(16), {
+      iv: new Uint8Array(16),
+    })
     console.log(toHex(sm4Result))
 
   },
