@@ -1,7 +1,6 @@
 use std::{cell::RefCell, option};
 
 use crate::crypto::sm2::concvec;
-use bytemuck::cast_slice;
 use num_bigint::BigUint;
 use num_traits::{sign, Num};
 use rand::SeedableRng;
@@ -37,11 +36,11 @@ pub fn init_rng_pool(seed: &[u8]) {
 pub fn sm3(input: &[u8]) -> Vec<u8> {
     console::log_1(&JsValue::from_str("invoked sm3"));
     let slice_u32 = crypto::sm3::sm3_hash_u32(input);
-    // Cast the Vec<u32> to a slice of u8
-    let slice_u8: &[u8] = cast_slice(&slice_u32);
-
-    // Convert the slice into a Vec<u8> without copying
-    Vec::from(slice_u8)
+    // Convert each u32 to big-endian bytes to ensure correct byte order
+    slice_u32
+        .iter()
+        .flat_map(|x| x.to_be_bytes())
+        .collect::<Vec<u8>>()
 }
 
 #[derive(Serialize, Deserialize)]
