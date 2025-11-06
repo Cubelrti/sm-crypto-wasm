@@ -68,7 +68,7 @@ Page({
       0xde, 0xad, 0xbe, 0xef
     ])
     const sm3Result = smCrypto.sm3(deadbeef)
-    console.log(sm3Result)
+    console.log(bytesToHex(sm3Result))
     const sign = smCrypto.sm2.doSignature(deadbeef, kp.privateKey, { hash: true, der: false})
     console.log(sign)
     const verify = smCrypto.sm2.doVerifySignature(deadbeef, kp.publicKey, sign, { hash: true, der: false})
